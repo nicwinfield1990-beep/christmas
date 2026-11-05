@@ -345,7 +345,14 @@ async function apiPost(body){const r=await fetch(API_URL,{method:"POST",headers:
 let busy=0;
 async function load(){if(!API_URL||!CODE)return;try{const d=await apiGet();apply(d);if($("banner").dataset.kind==="net")banner("")}catch(e){console.error(e);
   if(e&&e.error==="bad_code")banner("This link's code isn't right. Ask Nic for the invitation link again.","code");else if(!S.loaded)banner("Can't reach the list right now. Check your signal and refresh.","net")}}
-function apply(d){S.meals={};(d.meals||[]).forEach(m=>S.meals[m.id]=m);
+let MENU={},SHEET_MEALS={};
+function mergeMeals(){S.meals={};const ids=new Set([...Object.keys(SHEET_MEALS),...Object.keys(MENU)]);
+  ids.forEach(id=>{const sm=SHEET_MEALS[id],mm=MENU[id];if(!mm){S.meals[id]=sm;return}
+    const base=sm?{...sm}:{id,status:"confirmed"};const sheetHasDishes=sm&&(sm.dishes||[]).length;
+    if(!sheetHasDishes){if(mm.dishes)base.dishes=mm.dishes;if("desc" in mm)base.desc=mm.desc}
+    if(!base.title&&mm.title)base.title=mm.title;if(!sm&&mm.status)base.status=mm.status;S.meals[id]=base});}
+fetch("menu.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).then(j=>{MENU=j||{};mergeMeals();renderAll()}).catch(()=>{});
+function apply(d){SHEET_MEALS={};(d.meals||[]).forEach(m=>SHEET_MEALS[m.id]=m);mergeMeals();
   S.rsvps={};(d.rsvps||[]).forEach(r=>S.rsvps[r.id]={party:r.household,adults:r.adults,kids:r.kids,days:r.days,arrive:r.arrive,updatedAt:r.updated});
   S.ideas=d.ideas||[];S.items=d.items||[];S.votes={};(d.votes||[]).forEach(v=>{(S.votes[v.hh]=S.votes[v.hh]||{})[v.mealId]=v.ideaId});
   S.isHost=!!d.isHost;S.diet={};(d.hosts||[]).forEach(h=>S.diet[h.hh]={party:h.household,needs:h.needs,detail:h.detail,note:h.note});
