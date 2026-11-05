@@ -76,7 +76,7 @@ textarea{min-height:70px;resize:vertical}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .row>*{flex:1 1 140px;min-width:0}
 fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}
-legend{font-weight:600;font-size:13px;padding:0;margin-bottom:6px}
+legend{font-weight:600;font-size:13px;padding:0;margin-bottom:6px;width:100%;white-space:normal}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{position:relative}
 .chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
@@ -382,7 +382,7 @@ window.addEventListener("hashchange",route);
 
 /* ---------- RSVP ---------- */
 const PARTY=[
-  {id:"hosts",name:"Nic, Steph & Lyla",people:[{id:"nic",name:"Nic"},{id:"steph",name:"Steph"},{id:"lyla",name:"Lyla"}]},
+  {id:"hosts",name:"Mummy, Daddy & Lyla",people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
   {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
   {id:"rachs",name:"Auntie Rach & Auntie Rach",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"}]},
   {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon"}]},
