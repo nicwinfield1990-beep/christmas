@@ -1,9 +1,29 @@
 {
   "d25-breakfast": {
-    "dishes": ["Smoked salmon", "Scrambled eggs", "Crunchy Nut Cornflakes", "Croissants", "Toast", "Orange juice", "Champagne"]
+    "dishes": [
+      "Smoked salmon",
+      "Scrambled eggs",
+      "Crunchy Nut Cornflakes",
+      "Croissants",
+      "Toast",
+      "Orange juice",
+      "Champagne"
+    ]
   },
   "d25-lunch": {
     "desc": "",
-    "dishes": ["Smoked salmon & cream cheese blinis", "Crisps", "Nuts", "PRESENTS!!"]
+    "dishes": [
+      "Smoked salmon & cream cheese blinis",
+      "Crisps",
+      "Nuts",
+      "PRESENTS!!"
+    ]
+  },
+  "d25-dinner": {
+    "desc": "More to follow.",
+    "dishes": [
+      "Roast turkey",
+      "Roast potatoes"
+    ]
   }
 }
