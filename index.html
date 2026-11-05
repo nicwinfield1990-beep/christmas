@@ -351,7 +351,7 @@ function mergeMeals(){S.meals={};const ids=new Set([...Object.keys(SHEET_MEALS),
 fetch("menu.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).then(j=>{MENU=j||{};mergeMeals();renderAll()}).catch(()=>{});
 function apply(d){SHEET_MEALS={};(d.meals||[]).forEach(m=>SHEET_MEALS[m.id]=m);mergeMeals();
   S.rsvps={};(d.rsvps||[]).forEach(r=>S.rsvps[r.id]={party:r.household,adults:r.adults,kids:r.kids,days:r.days,arrive:r.arrive,updatedAt:r.updated});
-  S.ideas=d.ideas||[];S.items=d.items||[];S.votes={};(d.votes||[]).forEach(v=>{(S.votes[v.hh]=S.votes[v.hh]||{})[v.mealId]=v.ideaId});
+  S.ideas=d.ideas||[];S.items=d.items||[];S.votes={};S.legacyVote={};(d.votes||[]).forEach(v=>{if(!v.ideaId)return;const who=String(v.hh).split("|")[0];if(!String(v.hh).includes("|"))S.legacyVote[who+"/"+v.mealId]=v.ideaId;const m=(S.votes[who]=S.votes[who]||{});(m[v.mealId]=m[v.mealId]||new Set()).add(v.ideaId)});
   S.isHost=!!d.isHost;S.diet={};(d.hosts||[]).forEach(h=>S.diet[h.hh]={party:h.household,needs:h.needs,detail:h.detail,note:h.note});
   if(S.me&&!S.rsvps[S.me]&&S.loaded===false&&Object.keys(S.rsvps).length){/* keep id; maybe RSVP pending */}
   S.loaded=true;renderAll();}
@@ -413,7 +413,8 @@ function renderGuests(){const c=dayCounts();
 /* ---------- MENU (with polls and requests) ---------- */
 let editing=null;
 const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
-function tally(id){const t={};Object.values(S.votes).forEach(v=>{const x=v&&v[id];if(x)t[x]=(t[x]||0)+1});return t}
+function tally(id){const t={};Object.values(S.votes).forEach(v=>{const set=v&&v[id];if(set)set.forEach(x=>t[x]=(t[x]||0)+1)});return t}
+const myVotes=mid=>(S.votes[S.me]||{})[mid]||new Set();
 const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
 let egIx=0;
 function renderMenu(){
@@ -429,14 +430,14 @@ function renderMenu(){
   renderHostDiet();}
 function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=st==="confirmed";
   const ideas=S.ideas.filter(i=>i.mealId===id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
-  const t=tally(id),total=Object.values(t).reduce((a,b)=>a+b,0),mine=(S.votes[S.me]||{})[id];
+  const t=tally(id),total=Object.values(t).reduce((a,b)=>a+b,0),mine=myVotes(id);
   const pill=conf?`<span class="pill confirmed">Confirmed</span>`:st==="poll"?`<span class="pill poll">Poll open</span>`:`<span class="pill tbc">TBC</span>`;
   const title=m.title||(st==="poll"?"Up for a vote":"To be decided");
   const list=ideas.map(i=>{
     if(conf){const on=(m.dishes||[]).some(d=>String(d).toLowerCase()===String(i.title).toLowerCase());
       return `<div class="idea" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="t">${esc(i.title)}${on?' <span class="pill confirmed" style="margin-left:6px">On the menu</span>':""}</div><div class="by">Requested by ${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div></div>
         <div class="iacts">${S.isHost&&!on?`<button class="btn ghost" type="button" data-addtomenu="${id}|${i.id}">Add to menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove request">Remove</button>`:""}</div></div>`}
-    const v=t[i.id]||0,me=mine===i.id;
+    const v=t[i.id]||0,me=mine.has(i.id);
     return `<div class="idea ${me?"mine-vote":""}"><button class="vote" type="button" data-vote="${id}|${i.id}" aria-pressed="${me}" aria-label="Vote for ${esc(i.title)}">${v}</button>
       <div style="min-width:0"><div class="t">${esc(i.title)}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div>${total?`<div class="bar"><i style="width:${Math.round(v/total*100)}%"></i></div>`:""}</div>
       <div class="iacts">${S.isHost?`<button class="btn ghost" type="button" data-pick="${id}|${i.id}">Make it the menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove idea">Remove</button>`:""}</div></div>`}).join("");
@@ -450,7 +451,7 @@ function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=
   return `<article class="meal ${conf?"":"tbc"}" id="card-${id}"><div class="mtop"><span class="slot">${SLOT_NAME[slot]}</span>${pill}</div>
     <div class="mtitle">${esc(title)}</div>${m.desc?`<div class="muted">${esc(m.desc)}</div>`:""}
     ${(m.dishes||[]).length?`<ul class="dishes">${m.dishes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-    ${list?`<div class="ideas" style="margin-top:6px">${conf?'<div class="slot" style="margin-bottom:-2px">Requests</div>':`<div class="slot" style="margin-bottom:-2px">${st==="poll"?"Vote for your favourite":"Ideas so far · tap to vote"}</div>`}${list}</div>`:""}
+    ${list?`<div class="ideas" style="margin-top:6px">${conf?'<div class="slot" style="margin-bottom:-2px">Requests</div>':`<div class="slot" style="margin-bottom:-2px">${st==="poll"?"Vote for as many as you like":"Ideas so far · vote for as many as you like"}</div>`}${list}</div>`:""}
     <form class="addidea" data-addidea="${id}"><input type="text" id="ai-${id}" name="t" maxlength="80" placeholder="e.g. ${esc(eg)}" aria-label="${conf?"Request something for":"Suggest something for"} ${SLOT_NAME[slot]}"><button class="btn" type="submit">${conf?"Request":"Suggest"}</button></form>
     <div class="mfoot">${itemsFor(id)?`<a href="#shopping" data-filter="${id}">${itemsFor(id)} on the shopping list</a>`:""}
       ${S.isHost&&editing!==id?`<button class="btn ghost" type="button" data-editmeal="${id}">Edit</button>`:""}</div>${ed}</article>`}
@@ -463,7 +464,9 @@ $("menu").addEventListener("click",async e=>{const t=e.target;
   if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop();return}
   const b=t.closest("button");if(!b)return;
   try{
-    if(b.dataset.vote){if(!guard())return;const[mid,iid]=b.dataset.vote.split("|");const cur=(S.votes[S.me]||{})[mid];b.disabled=true;await write({action:"vote",hh:S.me,mealId:mid,ideaId:cur===iid?"":iid})}
+    if(b.dataset.vote){if(!guard())return;const[mid,iid]=b.dataset.vote.split("|");const on=myVotes(mid).has(iid);b.disabled=true;
+      if(on){if(S.legacyVote&&S.legacyVote[S.me+"/"+mid]===iid)await apiPost({action:"vote",hh:S.me,mealId:mid,ideaId:""}).catch(()=>{});await write({action:"vote",hh:S.me+"|"+iid,mealId:mid,ideaId:""})}
+      else await write({action:"vote",hh:S.me+"|"+iid,mealId:mid,ideaId:iid})}
     else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Removed")}
     else if(b.dataset.pick){const[mid,iid]=b.dataset.pick.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
       await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:i.title,desc:i.note||cur.desc||"",dishes:cur.dishes||[],status:"confirmed"},"Added to the menu")}
