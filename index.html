@@ -317,8 +317,9 @@ const DAYS=[
   {id:"26",short:"Sat",date:"Sat 26 Dec",name:"Boxing Day"},
   {id:"27",short:"Sun",date:"Sun 27 Dec",name:"Sunday"},
   {id:"28",short:"Mon",date:"Mon 28 Dec",name:"Monday"}];
-const SLOTS=["breakfast","lunch","dinner"];
-const SLOT_NAME={breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner"};
+const SLOTS=["breakfast","lunch","dinner","pudding"];
+const SLOT_NAME={breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",pudding:"Pudding"};
+const EVE_SLOTS=["dinner","pudding"];
 const DIET=["Vegetarian","Vegan","Pescatarian","Gluten-free","Dairy-free","Nut allergy","Shellfish allergy","Halal"];
 const CATS=["Meat & poultry","Fish & seafood","Fruit & veg","Dairy, eggs & cheese","Bakery","Cupboard","Frozen","Snacks & sweets","Drinks","Household"];
 const S={meals:{},rsvps:{},diet:{},ideas:[],votes:{},items:[],me:null,isHost:false,loaded:false,rsvpFilled:false};
@@ -326,7 +327,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const mealId=(d,s)=>`d${d}-${s}`;
 const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s})));
-const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&m.slot!=="dinner"));
+const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&!EVE_SLOTS.includes(m.slot)));
 const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
 const mealStatus=id=>S.meals[id]?.status||"tbc";
 const who=id=>S.rsvps[id]?.party||"A guest";
@@ -401,7 +402,7 @@ function renderGuests(){const c=dayCounts();
 /* ---------- MENU ---------- */
 let editing=null;
 function renderMenu(){const c=dayCounts();
-  $("menu").innerHTML=DAYS.map(d=>{const slots=SLOTS.filter(s=>!(d.id==="24"&&s!=="dinner"));
+  $("menu").innerHTML=DAYS.map(d=>{const slots=SLOTS.filter(s=>!(d.id==="24"&&!EVE_SLOTS.includes(s)));
     return `<div class="day"><div class="dayhead"><div class="dname">${d.name}</div><div class="ddate">${d.date}</div><div class="hc"><b>${c[d.id]}</b> staying</div></div>
     <div class="meals">${slots.map(s=>mealCard(mealId(d.id,s),s)).join("")}</div></div>`}).join("");
   renderHostDiet();}
@@ -503,11 +504,11 @@ function guessCat(t){t=t.toLowerCase();for(const[c,ws]of CAT_WORDS)if(ws.some(w=
 function guessMeals(t){t=t.toLowerCase();
   if(/christmas dinner|xmas dinner/.test(t))return["d25-dinner"];
   const days=[];[[/christmas eve|xmas eve|\b24(th)?\b/,"24"],[/christmas day|xmas day|\b25(th)?\b/,"25"],[/boxing day|\b26(th)?\b/,"26"],[/sunday|\b27(th)?\b/,"27"],[/monday|\b28(th)?\b/,"28"]].forEach(([r,d])=>{if(r.test(t))days.push(d)});
-  const slot=/breakfast|morning|brunch/.test(t)?"breakfast":/lunch|canap|picky|nibble/.test(t)?"lunch":/dinner|supper|evening|roast/.test(t)?"dinner":null;
+  const slot=/pudding|dessert|afters/.test(t)?"pudding":/breakfast|morning|brunch/.test(t)?"breakfast":/lunch|canap|picky|nibble/.test(t)?"lunch":/dinner|supper|evening|roast/.test(t)?"dinner":null;
   const each=/\b(each|every)\b|all week|daily/.test(t);
   if(each)return LIST_MEALS().filter(m=>m.slot===(slot||"dinner")).map(m=>m.id);
   if(!days.length)return["general"];
-  return days.map(d=>mealId(d,d==="24"?"dinner":(slot||"dinner")));}
+  return days.map(d=>mealId(d,d==="24"&&!EVE_SLOTS.includes(slot)?"dinner":(slot||"dinner")));}
 function localParse(text){return text.split(/\n|;/).map(s=>s.trim()).filter(Boolean).flatMap(line=>{
   const qm=line.match(/^(\d+(?:\.\d+)?\s*(?:x|kg|g|ml|l|packs?|bottles?|tins?|boxes?|bags?|jars?|pints?)?)\s+(?:of\s+)?/i);
   const qty=qm?qm[1].trim():"";const rest=qm?line.slice(qm[0].length):line;
