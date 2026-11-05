@@ -376,7 +376,7 @@ window.addEventListener("hashchange",route);
 const PARTY=[
   {id:"hosts",name:"Mummy, Daddy & Lyla",people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
   {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
-  {id:"rachs",name:"Auntie Rach & Auntie Rach",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"}]},
+  {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"},{id:"mr-neems",name:"Mr Neems"},{id:"bump",name:"Bump",count:false}]},
   {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon"}]},
   {id:"chris",name:"Uncle Chris",people:[{id:"chris",name:"Uncle Chris"}]}];
 const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
@@ -394,7 +394,7 @@ function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
 function fillRsvp(){}
 $("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_URL||!CODE){toast("Open this page from the invitation link");return}
   const h=HH[S.me];if(!h){toast("Pick who you are first");return}const btn=$("r-save");btn.disabled=true;
-  try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:1,kids:0,
+  try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:p.count===false?0:1,kids:0,
       days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:"",needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
     await load();toast("Saved, thank you");btn.textContent="Update"}catch(err){console.error(err);toast("That didn't save. Check your signal and try again.")}finally{btn.disabled=false}});
 function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=0);Object.values(S.rsvps).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
