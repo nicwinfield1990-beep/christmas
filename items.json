@@ -1,0 +1,15 @@
+[
+  {"name":"Smoked salmon","qty":"2 x 200g","cat":"Fish & seafood","mealId":"d25-breakfast","note":"Sized for 12"},
+  {"name":"Free range eggs","qty":"24","cat":"Dairy, eggs & cheese","mealId":"d25-breakfast","note":"For scrambled eggs"},
+  {"name":"Kellogg's Crunchy Nut Cornflakes","qty":"1 x 720g","cat":"Cupboard","mealId":"d25-breakfast","note":""},
+  {"name":"All butter croissants","qty":"3 x 4 pack","cat":"Bakery","mealId":"d25-breakfast","note":""},
+  {"name":"Bread for toast","qty":"1 loaf","cat":"Bakery","mealId":"d25-breakfast","note":""},
+  {"name":"Butter","qty":"250g","cat":"Dairy, eggs & cheese","mealId":"d25-breakfast","note":""},
+  {"name":"Orange juice","qty":"2 x 1L","cat":"Drinks","mealId":"d25-breakfast","note":""},
+  {"name":"Champagne","qty":"2 bottles","cat":"Drinks","mealId":"d25-breakfast","note":""},
+  {"name":"Smoked salmon","qty":"2 x 200g","cat":"Fish & seafood","mealId":"d25-lunch","note":"For the blinis"},
+  {"name":"Cream cheese","qty":"2 x 180g","cat":"Dairy, eggs & cheese","mealId":"d25-lunch","note":"For the blinis"},
+  {"name":"Blinis","qty":"3 x 16 pack","cat":"Bakery","mealId":"d25-lunch","note":""},
+  {"name":"Crisps","qty":"3 sharing bags","cat":"Snacks & sweets","mealId":"d25-lunch","note":""},
+  {"name":"Mixed nuts","qty":"2 x 200g","cat":"Snacks & sweets","mealId":"d25-lunch","note":""}
+]

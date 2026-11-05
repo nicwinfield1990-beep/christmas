@@ -300,6 +300,7 @@ footer.foot{padding-block:8px 40px;color:var(--muted);font-size:13px;display:fle
       <div class="stats" id="s-stats"></div>
       <button class="btn" type="button" id="s-copy" style="margin-left:auto">Copy Tesco list</button>
     </div>
+    <div id="suggest"></div>
     <div id="shop"></div>
   </section>
 </main>
@@ -330,7 +331,7 @@ const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s}))
 const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&!EVE_SLOTS.includes(m.slot)));
 const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
 const mealStatus=id=>S.meals[id]?.status||"tbc";
-const who=id=>S.rsvps[id]?.party||"A guest";
+const who=id=>id?(S.rsvps[id]?.party||"A guest"):"Hosts";
 
 /* ---------- codes, identity (kept on this phone only) ---------- */
 const store={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}}};
@@ -488,6 +489,16 @@ function renderShop(){mealOptions($("s-filter"));
       <div class="iacts">${!i.bringer?`<a class="tesco" href="${tescoUrl(i)}" target="_blank" rel="noopener">Find on Tesco ↗</a>`:""}
         ${mineB?`<button class="btn ghost" type="button" data-bring="${i.id}">Put back on order</button>`:!i.bringer?`<button class="btn ghost" type="button" data-bring="${i.id}">I'll bring it</button>`:""}
         ${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delitem="${i.id}" aria-label="Remove ${esc(i.name)}">Remove</button>`:""}</div></div>`}).join("")}</div>`}).join("");}
+let SUGGEST=[];
+fetch("items.json",{cache:"no-store"}).then(r=>r.ok?r.json():[]).then(j=>{SUGGEST=Array.isArray(j)?j:[];renderSuggest()}).catch(()=>{});
+const pendingSuggest=()=>SUGGEST.filter(i=>!S.items.some(x=>String(x.name).toLowerCase()===i.name.toLowerCase()&&x.mealId===i.mealId));
+function renderSuggest(){const el=$("suggest");const p=S.isHost&&S.loaded?pendingSuggest():[];
+  el.innerHTML=p.length?`<div class="hostnote"><h3>${p.length} suggested line${p.length>1?"s":""} ready <span class="small muted" style="font-family:var(--body)">host view only</span></h3>
+    <p class="small muted" style="margin:0 0 8px">${esc([...new Set(p.map(i=>mealLabel(i.mealId)))].join(" · "))}</p>
+    <ul class="small" style="margin:0 0 12px">${p.map(i=>`<li>${esc(i.name)} <span class="muted">${esc(i.qty)}</span></li>`).join("")}</ul>
+    <button class="btn primary" type="button" id="suggest-add">Add them</button></div>`:"";}
+$("suggest").addEventListener("click",async e=>{if(e.target.id!=="suggest-add")return;const p=pendingSuggest();if(!p.length)return;e.target.disabled=true;
+  try{await write({action:"addItems",by:S.me||"",items:p.map(i=>({...i,bringer:""}))},`Added ${p.length} to the list`)}catch(_){e.target.disabled=false}});
 $("s-filter").addEventListener("change",renderShop);
 $("shop").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!guard())return;b.disabled=true;
   try{if(b.dataset.bring){const i=S.items.find(x=>x.id===b.dataset.bring);await write({action:"updateItem",id:i.id,bringer:String(i.bringer)===String(S.me)?"":S.me})}
@@ -540,7 +551,7 @@ $("pv-add").addEventListener("click",async()=>{if(!guard()||!PV.length)return;co
 $("item-form").addEventListener("submit",e=>{e.preventDefault();const text=$("i-text").value.trim();if(!text)return;PV=localParse(text);renderPreview();});
 
 /* ---------- boot ---------- */
-function renderAll(){renderWho();renderGuests();renderMenu();renderIdeas();renderShop();fillRsvp()}
+function renderAll(){renderWho();renderGuests();renderMenu();renderIdeas();renderShop();renderSuggest();fillRsvp()}
 route();renderAll();
 if(!API_URL)banner("Not connected yet. Nic needs to finish setting up the Google Sheet.");
 else if(!CODE)banner("Open this page from the invitation link so you can join in.");
