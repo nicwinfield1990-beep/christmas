@@ -325,7 +325,7 @@ const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s}))
 const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&!EVE_SLOTS.includes(m.slot)));
 const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
 const mealStatus=id=>S.meals[id]?.status||"tbc";
-const who=id=>id?(HH[id]?.name||S.rsvps[id]?.party||"A guest"):"Hosts";
+const who=id=>id?(HH[id]?.name||S.rsvps[id]?.party||"A guest"):"Mummy, Daddy & Lyla";
 
 /* ---------- codes, identity (kept on this phone only) ---------- */
 const store={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}}};
@@ -402,7 +402,7 @@ const ALWAYS_IDS=new Set(PARTY.filter(h=>h.always).flatMap(h=>h.people.map(p=>p.
 function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=ALWAYS_IDS.size);Object.entries(S.rsvps).filter(([id])=>!ALWAYS_IDS.has(id)).map(([,r])=>r).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
 function renderGuests(){const c=dayCounts();
   $("headcount").innerHTML=DAYS.map(d=>`<div><b>${c[d.id]}</b><span>${d.short} ${d.id}</span></div>`).join("");
-  $("guests").innerHTML=PARTY.map(h=>{if(h.always)return `<div class="guest-hh"><div class="guest"><div><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div><div class="small muted">Hosts · here all week</div></div><div class="dots" aria-label="Every day">${DAYS.map(d=>`<i class="on" title="${d.date}">${d.id}</i>`).join("")}</div></div></div>`;
+  $("guests").innerHTML=PARTY.map(h=>{if(h.always)return `<div class="guest-hh"><div class="guest"><div><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div><div class="small muted">Here all week</div></div><div class="dots" aria-label="Every day">${DAYS.map(d=>`<i class="on" title="${d.date}">${d.id}</i>`).join("")}</div></div></div>`;
     const first=S.rsvps[h.people[0].id];const note=S.isHost&&S.diet[h.people[0].id]?.note;
     return `<div class="guest-hh"><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div>
     ${h.people.map(p=>{const r=S.rsvps[p.id];return `<div class="guest"><div class="small">${esc(p.name)}${r?"":' <span class="muted">· not replied yet</span>'}</div>
