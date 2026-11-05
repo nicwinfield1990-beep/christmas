@@ -199,6 +199,7 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
 .nights input{width:22px;height:22px;accent-color:var(--pine);cursor:pointer}
 .guest-hh{padding:10px 0;border-top:1px solid var(--line)}.guest-hh:first-child{border-top:0}
 .guest-hh .guest{border-top:0;padding:4px 0 0}
+#drinks .cat:first-child{margin-top:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -233,6 +234,7 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
 <div class="tabs"><div class="wrap"><nav aria-label="Sections">
   <a href="#rsvp" data-view="rsvp">RSVP</a>
   <a href="#menu" data-view="menu">Menu</a>
+  <a href="#drinks" data-view="drinks">Drinks</a>
   <a href="#shopping" data-view="shopping">Shopping list<span class="n" id="n-items"></span></a>
 </nav></div></div>
 
@@ -268,6 +270,12 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
     <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>The menu</h2><p>What we're eating each day. Suggest and vote on anything still to be decided, or ask for something to be added to a meal that's sorted.</p></div></div>
     <div id="hostdiet"></div>
     <div id="menu"></div>
+  </section>
+
+  <!-- DRINKS -->
+  <section id="v-drinks" data-v="drinks" hidden>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Drinks</h2><p>What's in the fridge and the cupboard all week. Ask for anything we've missed.</p></div></div>
+    <div id="drinks"></div>
   </section>
 
   <!-- SHOPPING -->
@@ -323,7 +331,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const mealId=(d,s)=>`d${d}-${s}`;
 const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s})));
 const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&!EVE_SLOTS.includes(m.slot)));
-const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
+const mealLabel=id=>{if(id==="drinks")return "Drinks";const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
 const mealStatus=id=>S.meals[id]?.status||"tbc";
 const who=id=>id?(HH[id]?.name||S.rsvps[id]?.party||"A guest"):"Mummy, Daddy & Lyla";
 
@@ -364,7 +372,7 @@ function guard(){if(!API_URL||!CODE){toast("Open this page from the invitation l
   if(!S.me){toast("Pick who you are on the RSVP tab first");location.hash="#rsvp";return false}return true}
 
 /* ---------- routing ---------- */
-const VIEWS=["rsvp","menu","shopping"];
+const VIEWS=["rsvp","menu","drinks","shopping"];
 function route(){let h=location.hash.slice(1);if(h==="ideas")h="menu";const v=VIEWS.includes(h)?h:"rsvp";
   document.querySelectorAll("[data-v]").forEach(s=>s.hidden=s.dataset.v!==v);
   document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});}
@@ -458,7 +466,7 @@ function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=
 function renderHostDiet(){const el=$("hostdiet");if(!S.isHost){el.innerHTML="";return}
   const rows=Object.entries(S.diet).filter(([,d])=>(d.needs||[]).length||d.detail);
   el.innerHTML=`<div class="hostnote"><h3>Dietary notes <span class="small muted" style="font-family:var(--body)">host view only</span></h3>${rows.length?`<ul>${rows.map(([u,d])=>`<li><b>${esc(d.party||who(u))}</b>: ${esc([...(d.needs||[]),d.detail].filter(Boolean).join("; "))}</li>`).join("")}</ul>`:`<p class="muted small" style="margin:0">Nobody has told you about any requirements yet.</p>`}</div>`}
-$("menu").addEventListener("click",async e=>{const t=e.target;
+["menu","drinks"].forEach(cid=>$(cid).addEventListener("click",async e=>{const t=e.target;
   if(t.dataset.editmeal){editing=t.dataset.editmeal;renderMenu();return}
   if(t.hasAttribute("data-cancel")){editing=null;renderMenu();return}
   if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop();return}
@@ -470,17 +478,34 @@ $("menu").addEventListener("click",async e=>{const t=e.target;
     else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Removed")}
     else if(b.dataset.pick){const[mid,iid]=b.dataset.pick.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
       await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:i.title,desc:i.note||cur.desc||"",dishes:cur.dishes||[],status:"confirmed"},"Added to the menu")}
-    else if(b.dataset.addtomenu){const[mid,iid]=b.dataset.addtomenu.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
+    else if(b.dataset.addtomenu){const[mid,iid]=b.dataset.addtomenu.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid)||{day:{id:""},slot:mid},cur=S.meals[mid]||{};
       await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:cur.title||"",desc:cur.desc||"",dishes:[...(cur.dishes||[]),i.title],status:"confirmed"},"Added to the menu")}
-  }catch(_){b.disabled=false}});
-$("menu").addEventListener("submit",async e=>{e.preventDefault();const f=e.target;
+  }catch(_){b.disabled=false}}));
+["menu","drinks"].forEach(cid=>$(cid).addEventListener("submit",async e=>{e.preventDefault();const f=e.target;
   if(f.dataset.addidea){const id=f.dataset.addidea;if(!guard())return;const inp=f.querySelector("input");const t=inp.value.trim();if(!t)return;inp.value="";
     const conf=mealStatus(id)==="confirmed";try{await write({action:"addIdea",mealId:id,title:t,note:"",by:S.me},conf?"Request added":"Idea added")}catch(_){inp.value=t}return}
   const id=f.dataset.edit;if(!id)return;const fd=new FormData(f);const m=ALL_MEALS.find(x=>x.id===id);
-  editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}});
+  editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}}));
+
+/* ---------- DRINKS ---------- */
+function renderDrinks(){const el=$("drinks");if(!el)return;
+  const keep=el.querySelector("form.addidea input");const kv=keep?keep.value:"",kf=keep&&document.activeElement===keep;
+  const secs=(MENU.drinks&&MENU.drinks.sections)||[];const sm=S.meals.drinks||{};
+  const listed=new Set(secs.flatMap(x=>(x.items||[]).map(i=>String(i).toLowerCase())));
+  const extra=(sm.dishes||[]).filter(d=>!listed.has(String(d).toLowerCase()));
+  const all=new Set([...listed,...extra.map(d=>String(d).toLowerCase())]);
+  const reqs=S.ideas.filter(i=>i.mealId==="drinks").sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+  const block=(name,items)=>`<div class="cat"><h3>${esc(name)}</h3>${items.length?`<ul class="dishes">${items.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:`<p class="small muted" style="margin:0">Details to follow</p>`}</div>`;
+  el.innerHTML=`<article class="meal">${secs.length||extra.length?secs.map(x=>block(x.name,x.items||[])).join("")+(extra.length?block("Also on the list",extra):""):`<p class="muted" style="margin:0">The drinks list is on its way.</p>`}
+    ${reqs.length?`<div class="ideas" style="margin-top:14px"><div class="slot" style="margin-bottom:-2px">Requests</div>${reqs.map(i=>{const on=all.has(String(i.title).toLowerCase());
+      return `<div class="idea" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="t">${esc(i.title)}${on?' <span class="pill confirmed" style="margin-left:6px">On the list</span>':""}</div><div class="by">Requested by ${esc(who(i.by))}</div></div>
+        <div class="iacts">${S.isHost&&!on?`<button class="btn ghost" type="button" data-addtomenu="drinks|${i.id}">Add to drinks</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove request">Remove</button>`:""}</div></div>`}).join("")}</div>`:""}
+    <form class="addidea" data-addidea="drinks" style="margin-top:12px"><input type="text" id="ai-drinks" name="t" maxlength="80" placeholder="e.g. 20 Marlboro Lights and 11 pints of Stella" aria-label="Request a drink"><button class="btn" type="submit">Request</button></form>
+    ${itemsFor("drinks")?`<div class="mfoot" style="margin-top:8px"><a href="#shopping" data-filter="drinks">${itemsFor("drinks")} on the shopping list</a></div>`:""}</article>`;
+  const ni=el.querySelector("form.addidea input");if(ni&&kv){ni.value=kv;if(kf)ni.focus()}}
 
 /* ---------- SHOPPING ---------- */
-function mealOptions(sel){const opts=[`<option value="all">All meals</option>`,`<option value="general">General / snacks &amp; drinks</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}">${esc(mealLabel(m.id))}</option>`));
+function mealOptions(sel){const opts=[`<option value="all">All meals</option>`,`<option value="general">General / snacks</option>`,`<option value="drinks">Drinks</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}">${esc(mealLabel(m.id))}</option>`));
   const v=sel.value;sel.innerHTML=opts.join("");if(v&&[...sel.options].some(o=>o.value===v))sel.value=v}
 const tescoUrl=i=>"https://www.tesco.com/groceries/en-GB/search?query="+encodeURIComponent(i.name);
 function renderShop(){mealOptions($("s-filter"));
@@ -542,7 +567,7 @@ function localParse(text){return text.split(/\n|;/).map(s=>s.trim()).filter(Bool
   const name=rest.split(/\s+(?:for|each|every|on)\s+/i)[0].trim()||rest;const cat=guessCat(line);
   return guessMeals(line).map(mid=>({name:name.charAt(0).toUpperCase()+name.slice(1),qty:qty||(mid==="general"?"":`for ${headFor(mid)}`),cat,mealId:mid,note:""}));});}
 let PV=[];
-function mealSelect(v,idx){return `<select data-pv="${idx}" data-f="mealId" aria-label="Meal">${[`<option value="general">General</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}"${m.id===v?" selected":""}>${esc(mealLabel(m.id))}</option>`)).join("")}</select>`}
+function mealSelect(v,idx){return `<select data-pv="${idx}" data-f="mealId" aria-label="Meal">${[`<option value="general">General</option>`,`<option value="drinks"${v==="drinks"?" selected":""}>Drinks</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}"${m.id===v?" selected":""}>${esc(mealLabel(m.id))}</option>`)).join("")}</select>`}
 function renderPreview(){$("preview").hidden=!PV.length;$("pv-add").textContent=`Add ${PV.length} to list`;
   $("pv-rows").innerHTML=PV.map((p,i)=>`<div class="item" style="grid-template-columns:minmax(0,1fr) auto"><div class="row" style="min-width:0">
     <input type="text" data-pv="${i}" data-f="name" value="${esc(p.name)}" aria-label="Item" style="flex:2 1 180px">
@@ -560,7 +585,7 @@ $("pv-add").addEventListener("click",async()=>{if(!guard()||!PV.length)return;co
 $("item-form").addEventListener("submit",e=>{e.preventDefault();const text=$("i-text").value.trim();if(!text)return;PV=localParse(text);renderPreview();});
 
 /* ---------- boot ---------- */
-function renderAll(){renderWho();renderGuests();renderMenu();renderShop();renderSuggest();fillRsvp()}
+function renderAll(){renderWho();renderGuests();renderMenu();renderDrinks();renderShop();renderSuggest();fillRsvp()}
 route();renderAll();
 if(!API_URL)banner("Not connected yet. Nic needs to finish setting up the Google Sheet.");
 else if(!CODE)banner("Open this page from the invitation link so you can join in.");

@@ -34,5 +34,15 @@
       "Peas"
     ],
     "title": "Christmas dinner"
+  },
+  "drinks": {
+    "title": "Drinks",
+    "dishes": [],
+    "sections": [
+      {
+        "name": "Beers",
+        "items": []
+      }
+    ]
   }
 }
