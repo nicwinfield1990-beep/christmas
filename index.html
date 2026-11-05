@@ -249,7 +249,6 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
           <fieldset><legend>Who are you?</legend><div class="chips" id="r-who"></div></fieldset>
           <div id="rsvp-body" hidden style="display:grid;gap:16px">
             <fieldset><legend>Which days is each of you here? <span class="h" style="font-weight:400;color:var(--muted)">Untick any day someone isn't with us</span></legend><div class="tablewrap" id="r-grid"></div></fieldset>
-            <label class="f">Rough arrival time on your first day <span class="h">optional</span><input type="text" id="r-arrive" maxlength="60" placeholder="e.g. about 3pm"></label>
             <fieldset><legend>Dietary requirements <span class="h" style="font-weight:400;color:var(--muted)">only the hosts see these</span></legend><div id="r-dietrows" style="display:grid;gap:10px"></div></fieldset>
             <label class="f">Note for the hosts <span class="h">optional</span><textarea id="r-note" maxlength="400"></textarea></label>
             <div><button class="btn primary" type="submit" id="r-save">Save</button></div>
@@ -396,20 +395,20 @@ function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
   $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
     return `<tr><th scope="row">${esc(p.name)}</th>${DAYS.map(d=>`<td><input type="checkbox" id="n-${p.id}-${d.id}" aria-label="${esc(p.name)} on ${d.date}"${days.includes(d.id)?" checked":""}></td>`).join("")}</tr>`}).join("")}</tbody></table>`;
   $("r-dietrows").innerHTML=h.people.map(p=>`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="e.g. vegetarian, nut allergy, no sprouts"></label>`).join("");
-  $("r-arrive").value=S.rsvps[h.people[0].id]?.arrive||"";$("r-note").value="";
+  $("r-note").value="";
   $("r-save").textContent=h.people.some(p=>S.rsvps[p.id])?"Update":"Save";
   h.people.forEach(async(p,i)=>{try{const j=await apiPost({action:"mine",id:p.id});const m=j.mine;if(m&&S.formFor===h.id){$("dt-"+p.id).value=[...(m.needs||[]),m.detail].filter(Boolean).join(", ");if(i===0)$("r-note").value=m.note||""}}catch(_){}});}
 function fillRsvp(){}
 $("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_URL||!CODE){toast("Open this page from the invitation link");return}
   const h=HH[S.me];if(!h){toast("Pick who you are first");return}const btn=$("r-save");btn.disabled=true;
   try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:1,kids:0,
-      days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:$("r-arrive").value.trim(),needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
+      days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:"",needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
     await load();toast("Saved, thank you");btn.textContent="Update"}catch(err){console.error(err);toast("That didn't save. Check your signal and try again.")}finally{btn.disabled=false}});
 function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=0);Object.values(S.rsvps).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
 function renderGuests(){const c=dayCounts();
   $("headcount").innerHTML=DAYS.map(d=>`<div><b>${c[d.id]}</b><span>${d.short} ${d.id}</span></div>`).join("");
   $("guests").innerHTML=PARTY.map(h=>{const first=S.rsvps[h.people[0].id];const note=S.isHost&&S.diet[h.people[0].id]?.note;
-    return `<div class="guest-hh"><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}${first?.arrive?` <span class="small muted">· arriving ${esc(first.arrive)}</span>`:""}</div>
+    return `<div class="guest-hh"><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div>
     ${h.people.map(p=>{const r=S.rsvps[p.id];return `<div class="guest"><div class="small">${esc(p.name)}${r?"":' <span class="muted">· not replied yet</span>'}</div>
       <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${r&&(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")}
     ${note?`<div class="small" style="margin-top:4px">“${esc(note)}”</div>`:""}</div>`}).join("");}
