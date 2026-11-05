@@ -412,7 +412,7 @@ function renderGuests(){const c=dayCounts();
 
 /* ---------- MENU (with polls and requests) ---------- */
 let editing=null;
-const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons","20 Marlboro Lights and 11 pints of Stella"];
+const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","20 Marlboro Lights and 11 pints of Stella","PlayStation lessons","Crunchy Nut Cornflakes with Baileys"];
 function tally(id){const t={};Object.values(S.votes).forEach(v=>{const set=v&&v[id];if(set)set.forEach(x=>t[x]=(t[x]||0)+1)});return t}
 const myVotes=mid=>(S.votes[S.me]||{})[mid]||new Set();
 const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
