@@ -249,7 +249,7 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
           <p class="small muted" id="r-always" hidden style="margin:0">You're here all week, so no RSVP needed. You can suggest, vote and add to the shopping list as Mummy, Daddy &amp; Lyla.</p>
           <div id="rsvp-body" hidden style="display:grid;gap:16px">
             <fieldset><legend>Which days is each of you here? <span class="h" style="font-weight:400;color:var(--muted)">Untick any day someone isn't with us</span></legend><div class="tablewrap" id="r-grid"></div></fieldset>
-            <fieldset><legend>Dietary requirements <span class="h" style="font-weight:400;color:var(--muted)">only the hosts see these</span></legend><div id="r-dietrows" style="display:grid;gap:10px"></div></fieldset>
+            <fieldset id="r-dietset" hidden><legend>Dietary requirements <span class="h" style="font-weight:400;color:var(--muted)">only the hosts see these</span></legend><div id="r-dietrows" style="display:grid;gap:10px"></div></fieldset>
             <label class="f">Note for the hosts <span class="h">optional</span><textarea id="r-note" maxlength="400" placeholder="e.g. Salad and Shoe Shoe might pop in&#10;or Simon is a bed wetter"></textarea></label>
             <div><button class="btn primary" type="submit" id="r-save">Save</button></div>
           </div>
@@ -316,7 +316,6 @@ const DAYS=[
 const SLOTS=["breakfast","lunch","dinner","pudding"];
 const SLOT_NAME={breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",pudding:"Pudding"};
 const EVE_SLOTS=["dinner","pudding"];
-const DIET=["Vegetarian","Vegan","Pescatarian","Gluten-free","Dairy-free","Nut allergy","Shellfish allergy","Halal"];
 const CATS=["Meat & poultry","Fish & seafood","Fruit & veg","Dairy, eggs & cheese","Bakery","Cupboard","Frozen","Snacks & sweets","Drinks","Household"];
 const S={meals:{},rsvps:{},diet:{},ideas:[],votes:{},items:[],me:null,isHost:false,loaded:false,rsvpFilled:false};
 const $=id=>document.getElementById(id);
@@ -377,8 +376,8 @@ window.addEventListener("hashchange",route);
 const PARTY=[
   {id:"hosts",name:"Mummy, Daddy & Lyla",always:true,people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
   {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
-  {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"}]},
-  {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon"}]},
+  {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach",diet:"e.g. vegan"},{id:"rach-2",name:"Auntie Rach",diet:"e.g. vegan"}]},
+  {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon",diet:"Your list, e.g. no onions, no garlic"}]},
   {id:"chris",name:"Uncle Chris",people:[{id:"chris",name:"Uncle Chris"}]}];
 const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
 if(S.me&&!HH[S.me]){S.me=null;store.set("xmas-hh",null)}
@@ -389,15 +388,16 @@ $("r-who").addEventListener("change",e=>{const v=e.target.value;if(!HH[v])return
 function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
   $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
     return `<tr><th scope="row">${esc(p.name)}</th>${DAYS.map(d=>`<td><input type="checkbox" id="n-${p.id}-${d.id}" aria-label="${esc(p.name)} on ${d.date}"${days.includes(d.id)?" checked":""}></td>`).join("")}</tr>`}).join("")}</tbody></table>`;
-  $("r-dietrows").innerHTML=h.people.map(p=>`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="e.g. vegetarian, nut allergy, no sprouts"></label>`).join("");
+  const dp=h.people.filter(p=>p.diet);$("r-dietset").hidden=!dp.length;
+  $("r-dietrows").innerHTML=dp.map(p=>p.id==="simon"?`<label class="f">${esc(p.name)}<textarea id="dt-${p.id}" maxlength="400" placeholder="${esc(p.diet)}"></textarea></label>`:`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="${esc(p.diet)}"></label>`).join("");
   $("r-note").value="";
   $("r-save").textContent=h.people.some(p=>S.rsvps[p.id])?"Update":"Save";
-  h.people.forEach(async(p,i)=>{try{const j=await apiPost({action:"mine",id:p.id});const m=j.mine;if(m&&S.formFor===h.id){$("dt-"+p.id).value=[...(m.needs||[]),m.detail].filter(Boolean).join(", ");if(i===0)$("r-note").value=m.note||""}}catch(_){}});}
+  h.people.forEach(async(p,i)=>{try{const j=await apiPost({action:"mine",id:p.id});const m=j.mine;if(m&&S.formFor===h.id){if($("dt-"+p.id))$("dt-"+p.id).value=[...(m.needs||[]),m.detail].filter(Boolean).join(", ");if(i===0)$("r-note").value=m.note||""}}catch(_){}});}
 function fillRsvp(){}
 $("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_URL||!CODE){toast("Open this page from the invitation link");return}
   const h=HH[S.me];if(!h){toast("Pick who you are first");return}const btn=$("r-save");btn.disabled=true;
   try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:p.count===false?0:1,kids:0,
-      days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:"",needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
+      days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:"",needs:[],detail:$("dt-"+p.id)?$("dt-"+p.id).value.trim():"",note:i===0?$("r-note").value.trim():""})}
     await load();toast("Saved, thank you");btn.textContent="Update"}catch(err){console.error(err);toast("That didn't save. Check your signal and try again.")}finally{btn.disabled=false}});
 const ALWAYS_IDS=new Set(PARTY.filter(h=>h.always).flatMap(h=>h.people.map(p=>p.id)));
 function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=ALWAYS_IDS.size);Object.entries(S.rsvps).filter(([id])=>!ALWAYS_IDS.has(id)).map(([,r])=>r).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
