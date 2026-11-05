@@ -190,6 +190,15 @@ legend{font-weight:600;font-size:13px;padding:0;margin-bottom:6px}
 .view-head h2{display:flex;align-items:center;gap:10px}
 .dayhead .dname::after{content:"";display:block;width:28px;height:2px;margin-top:10px;background:linear-gradient(90deg,var(--berry) 0 33%,var(--gold) 33% 66%,var(--pine) 66%)}
 footer.foot{padding-block:8px 40px;color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px}
+.tablewrap{overflow-x:auto}
+table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.nights th,.nights td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line)}
+.nights thead th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nights thead th span{display:block;font-family:var(--display);font-size:18px;letter-spacing:0;color:var(--ink);text-transform:none;font-weight:400}
+.nights tbody th{text-align:left;font-weight:600;white-space:nowrap;padding-right:10px}
+.nights input{width:22px;height:22px;accent-color:var(--pine);cursor:pointer}
+.guest-hh{padding:10px 0;border-top:1px solid var(--line)}.guest-hh:first-child{border-top:0}
+.guest-hh .guest{border-top:0;padding:4px 0 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -233,25 +242,18 @@ footer.foot{padding-block:8px 40px;color:var(--muted);font-size:13px;display:fle
 
   <!-- RSVP -->
   <section id="v-rsvp" data-v="rsvp">
-    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Let us know you're coming</h2><p>One reply per couple or household. You can come back and change it any time.</p></div></div>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Let us know you're coming</h2><p>Pick who you are, then tick the days each of you is here. You can come back and change it any time.</p></div></div>
     <div class="grid2">
       <div class="panel">
-        <div id="who-row" class="row" style="align-items:center;margin-bottom:14px" hidden>
-          <label class="f" style="flex:1 1 220px">Replied already, or on another phone?<select id="r-who"></select></label>
-          <span class="small muted" id="who-me" style="flex:1 1 160px"></span>
-        </div>
         <form id="rsvp-form">
-          <label class="f">Your names <span class="h">e.g. Salad &amp; Shoe Shoe</span><input type="text" id="r-party" maxlength="60" required></label>
-          <div class="row">
-            <label class="f">How many of you?<input type="number" id="r-adults" min="0" max="10" value="2"></label>
+          <fieldset><legend>Who are you?</legend><div class="chips" id="r-who"></div></fieldset>
+          <div id="rsvp-body" hidden style="display:grid;gap:16px">
+            <fieldset><legend>Which days is each of you here? <span class="h" style="font-weight:400;color:var(--muted)">Untick any day someone isn't with us</span></legend><div class="tablewrap" id="r-grid"></div></fieldset>
+            <label class="f">Rough arrival time on your first day <span class="h">optional</span><input type="text" id="r-arrive" maxlength="60" placeholder="e.g. about 3pm"></label>
+            <fieldset><legend>Dietary requirements <span class="h" style="font-weight:400;color:var(--muted)">only the hosts see these</span></legend><div id="r-dietrows" style="display:grid;gap:10px"></div></fieldset>
+            <label class="f">Note for the hosts <span class="h">optional</span><textarea id="r-note" maxlength="400"></textarea></label>
+            <div><button class="btn primary" type="submit" id="r-save">Save</button></div>
           </div>
-          <fieldset><legend>Which days are you with us?</legend><div class="chips" id="r-days"></div></fieldset>
-          <label class="f">Rough arrival time on your first day <span class="h">optional</span><input type="text" id="r-arrive" maxlength="60" placeholder="e.g. about 3pm"></label>
-          <fieldset><legend>Dietary requirements</legend><div class="chips" id="r-diet"></div></fieldset>
-          <label class="f">Anything else on food <span class="h">allergies, strong dislikes, who it applies to</span><textarea id="r-dietnote" maxlength="400"></textarea></label>
-          <label class="f">Note for the hosts <span class="h">optional</span><textarea id="r-note" maxlength="400"></textarea></label>
-          <p class="small muted" style="margin:0">Dietary details and notes are only shown to the hosts.</p>
-          <div><button class="btn primary" type="submit" id="r-save">Save my RSVP</button></div>
         </form>
       </div>
       <div class="panel">
@@ -331,7 +333,7 @@ const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s}))
 const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&!EVE_SLOTS.includes(m.slot)));
 const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
 const mealStatus=id=>S.meals[id]?.status||"tbc";
-const who=id=>id?(S.rsvps[id]?.party||"A guest"):"Hosts";
+const who=id=>id?(HH[id]?.name||S.rsvps[id]?.party||"A guest"):"Hosts";
 
 /* ---------- codes, identity (kept on this phone only) ---------- */
 const store={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}}};
@@ -367,7 +369,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 let toastT;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2400)}
 function banner(m,kind){const b=$("banner");b.textContent=m||"";b.dataset.kind=kind||"";b.hidden=!m}
 function guard(){if(!API_URL||!CODE){toast("Open this page from the invitation link");return false}
-  if(!S.me){toast("RSVP first, or pick your names, so we know who's who");location.hash="#rsvp";return false}return true}
+  if(!S.me){toast("Pick who you are on the RSVP tab first");location.hash="#rsvp";return false}return true}
 
 /* ---------- routing ---------- */
 const VIEWS=["rsvp","menu","ideas","shopping"];
@@ -377,36 +379,40 @@ function route(){const v=VIEWS.includes(location.hash.slice(1))?location.hash.sl
 window.addEventListener("hashchange",route);
 
 /* ---------- static form bits ---------- */
-$("r-days").innerHTML=DAYS.map(d=>`<label class="chip"><input type="checkbox" value="${d.id}" id="rd-${d.id}" checked><span>${d.date}</span></label>`).join("");
-$("r-diet").innerHTML=DIET.map((d,i)=>`<label class="chip"><input type="checkbox" value="${esc(d)}" id="rdi-${i}"><span>${esc(d)}</span></label>`).join("");
 
 /* ---------- RSVP ---------- */
-function renderWho(){const sel=$("r-who"),ids=Object.keys(S.rsvps);$("who-row").hidden=!ids.length;
-  sel.innerHTML=`<option value="">${S.me&&S.rsvps[S.me]?"":"Pick your names…"}</option>`+ids.map(id=>`<option value="${esc(id)}"${id===S.me?" selected":""}>${esc(S.rsvps[id].party)}</option>`).join("")+`<option value="__new">We haven't replied yet</option>`;
-  $("who-me").textContent=S.me&&S.rsvps[S.me]?`Replying as ${S.rsvps[S.me].party}.`:"";}
-$("r-who").addEventListener("change",async e=>{const v=e.target.value;if(!v)return;
-  if(v==="__new"){S.me=null;store.set("xmas-hh",null);S.rsvpFilled=false;$("rsvp-form").reset();DAYS.forEach(d=>$("rd-"+d.id).checked=true);$("r-save").textContent="Save my RSVP";renderAll();return}
-  S.me=v;store.set("xmas-hh",v);S.rsvpFilled=false;fillRsvp(true);renderAll();toast(`Hi ${S.rsvps[v].party}`);});
-async function fillRsvp(force){if((S.rsvpFilled&&!force)||!S.me)return;const r=S.rsvps[S.me];if(!r)return;S.rsvpFilled=true;
-  $("r-party").value=r.party||"";$("r-adults").value=r.adults??2;$("r-arrive").value=r.arrive||"";
-  DAYS.forEach(x=>$("rd-"+x.id).checked=(r.days||[]).includes(x.id));$("r-save").textContent="Update my RSVP";
-  try{const j=await apiPost({action:"mine",id:S.me});const m=j.mine;if(m){DIET.forEach((x,i)=>$("rdi-"+i).checked=(m.needs||[]).includes(x));$("r-dietnote").value=m.detail||"";$("r-note").value=m.note||""}}catch(_){}}
+const PARTY=[
+  {id:"hosts",name:"Nic, Steph & Lyla",people:[{id:"nic",name:"Nic"},{id:"steph",name:"Steph"},{id:"lyla",name:"Lyla"}]},
+  {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
+  {id:"rachs",name:"Auntie Rach & Auntie Rach",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"}]},
+  {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon"}]},
+  {id:"chris",name:"Uncle Chris",people:[{id:"chris",name:"Uncle Chris"}]}];
+const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
+if(S.me&&!HH[S.me]){S.me=null;store.set("xmas-hh",null)}
+function renderWho(){$("r-who").innerHTML=PARTY.map(h=>`<label class="chip"><input type="radio" name="who" value="${h.id}" id="rw-${h.id}"${h.id===S.me?" checked":""}><span>${esc(h.name)}</span></label>`).join("");
+  $("rsvp-body").hidden=!S.me;if(S.me&&S.loaded&&S.formFor!==S.me)buildForm();}
+$("r-who").addEventListener("change",e=>{const v=e.target.value;if(!HH[v])return;S.me=v;store.set("xmas-hh",v);S.formFor=null;renderAll();});
+function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
+  $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
+    return `<tr><th scope="row">${esc(p.name)}</th>${DAYS.map(d=>`<td><input type="checkbox" id="n-${p.id}-${d.id}" aria-label="${esc(p.name)} on ${d.date}"${days.includes(d.id)?" checked":""}></td>`).join("")}</tr>`}).join("")}</tbody></table>`;
+  $("r-dietrows").innerHTML=h.people.map(p=>`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="e.g. vegetarian, nut allergy, no sprouts"></label>`).join("");
+  $("r-arrive").value=S.rsvps[h.people[0].id]?.arrive||"";$("r-note").value="";
+  $("r-save").textContent=h.people.some(p=>S.rsvps[p.id])?"Update":"Save";
+  h.people.forEach(async(p,i)=>{try{const j=await apiPost({action:"mine",id:p.id});const m=j.mine;if(m&&S.formFor===h.id){$("dt-"+p.id).value=[...(m.needs||[]),m.detail].filter(Boolean).join(", ");if(i===0)$("r-note").value=m.note||""}}catch(_){}});}
+function fillRsvp(){}
 $("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_URL||!CODE){toast("Open this page from the invitation link");return}
-  const party=$("r-party").value.trim();if(!party)return;const btn=$("r-save");btn.disabled=true;
-  const body={action:"rsvp",id:S.me||"",household:party,adults:Math.max(0,+$("r-adults").value||0),kids:S.rsvps[S.me]?.kids||0,
-    days:DAYS.filter(d=>$("rd-"+d.id).checked).map(d=>d.id),arrive:$("r-arrive").value.trim(),
-    needs:DIET.filter((x,i)=>$("rdi-"+i).checked),detail:$("r-dietnote").value.trim(),note:$("r-note").value.trim()};
-  try{const j=await write(body,"RSVP saved");S.me=j.id;store.set("xmas-hh",j.id);S.rsvpFilled=true;btn.textContent="Update my RSVP";renderAll()}catch(_){}finally{btn.disabled=false}});
+  const h=HH[S.me];if(!h){toast("Pick who you are first");return}const btn=$("r-save");btn.disabled=true;
+  try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:1,kids:0,
+      days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:$("r-arrive").value.trim(),needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
+    await load();toast("Saved, thank you");btn.textContent="Update"}catch(err){console.error(err);toast("That didn't save. Check your signal and try again.")}finally{btn.disabled=false}});
 function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=0);Object.values(S.rsvps).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
 function renderGuests(){const c=dayCounts();
   $("headcount").innerHTML=DAYS.map(d=>`<div><b>${c[d.id]}</b><span>${d.short} ${d.id}</span></div>`).join("");
-  const list=Object.entries(S.rsvps).sort((a,b)=>String(a[1].updatedAt||"").localeCompare(String(b[1].updatedAt||"")));
-  $("guests").innerHTML=list.length?list.map(([id,r])=>{const n=(+r.adults||0)+(+r.kids||0);const note=S.isHost&&S.diet[id]?.note;
-    return `<div class="guest"><div><div class="nm">${esc(r.party)}${id===S.me?' <span class="muted small">(you)</span>':""}</div>
-      <div class="small muted">${n} ${n===1?"person":"people"}${r.kids?` incl. ${r.kids} ${r.kids==1?"child":"children"}`:""}${r.arrive?" · arriving "+esc(r.arrive):""}</div>
-      ${note?`<div class="small" style="margin-top:4px">“${esc(note)}”</div>`:""}</div>
-      <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")
-    :`<p class="muted small" style="margin:0">${S.loaded?"No replies yet. Yours will show here once you save it.":"Loading replies…"}</p>`;}
+  $("guests").innerHTML=PARTY.map(h=>{const first=S.rsvps[h.people[0].id];const note=S.isHost&&S.diet[h.people[0].id]?.note;
+    return `<div class="guest-hh"><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}${first?.arrive?` <span class="small muted">· arriving ${esc(first.arrive)}</span>`:""}</div>
+    ${h.people.map(p=>{const r=S.rsvps[p.id];return `<div class="guest"><div class="small">${esc(p.name)}${r?"":' <span class="muted">· not replied yet</span>'}</div>
+      <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${r&&(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")}
+    ${note?`<div class="small" style="margin-top:4px">“${esc(note)}”</div>`:""}</div>`}).join("");}
 
 /* ---------- MENU ---------- */
 let editing=null;
