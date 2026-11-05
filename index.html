@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Christmas at Ours</title>
+<meta property="og:title" content="Christmas at Ours">
+<meta property="og:description" content="24 to 28 December. RSVP, see the menu, vote on meals and add to the shopping list.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: an invitation card header, sticky tab bar, then one view at a time (RSVP, Menu, Ideas, Shopping) in a 960px column. */
+:root{
+  --bg:#eef2ee; --surface:#ffffff; --sunk:#e4eae5; --ink:#15241d; --muted:#5a6b62; --line:#d3dcd5;
+  --pine:#1d4a39; --pine-ink:#f2f7f3; --berry:#a01d3a; --berry-soft:#f7e3e7; --gold:#9c7a32; --ok:#2f7a52; --ok-soft:#dcefe3;
+  --display:"Gloock", "Georgia", "Times New Roman", serif;
+  --body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1612; --surface:#16211c; --sunk:#111b16; --ink:#e7eee9; --muted:#9aaca2; --line:#283830;
+  --pine:#7dbd9e; --pine-ink:#0e1612; --berry:#ec6b83; --berry-soft:#3a1820; --gold:#d6b46c; --ok:#6fcf98; --ok-soft:#183325; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1612; --surface:#16211c; --sunk:#111b16; --ink:#e7eee9; --muted:#9aaca2; --line:#283830;
+  --pine:#7dbd9e; --pine-ink:#0e1612; --berry:#ec6b83; --berry-soft:#3a1820; --gold:#d6b46c; --ok:#6fcf98; --ok-soft:#183325; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;-webkit-text-size-adjust:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--pine)}
+:focus-visible{outline:2px solid var(--berry);outline-offset:2px}
+
+/* invitation */
+.invite{padding-block:28px 20px}
+.card{background:var(--pine);color:var(--pine-ink);border-radius:14px;padding:28px 28px 24px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;position:relative;overflow:hidden}
+.card::after{content:"";position:absolute;inset:8px;border:1px solid color-mix(in srgb,var(--pine-ink) 28%,transparent);border-radius:9px;pointer-events:none}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;margin:0 0 8px}
+.card h1{font-size:clamp(34px,7vw,58px)}
+.card p.sub{margin:10px 0 0;max-width:46ch;opacity:.9}
+.stamp{border:1px solid color-mix(in srgb,var(--pine-ink) 45%,transparent);border-radius:8px;padding:12px 16px;text-align:center;min-width:132px}
+.stamp b{display:block;font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
+.stamp span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+@media (max-width:560px){.card{grid-template-columns:1fr;padding:24px 22px}.stamp{justify-self:start}}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs a{flex:none;text-decoration:none;color:var(--muted);padding:12px 14px;font-weight:600;border-bottom:2px solid transparent;font-size:14px}
+.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--berry)}
+.tabs a .n{font-variant-numeric:tabular-nums;font-weight:500;color:var(--muted);margin-left:4px}
+
+main{padding-block:22px 64px}
+.banner{background:var(--berry-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;margin-bottom:18px;font-size:14px}
+.view-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.view-head h2{font-size:30px}
+.view-head p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.panel h3{font-size:20px;margin-bottom:12px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* forms */
+form{display:grid;gap:14px}
+label.f{display:grid;gap:5px;font-weight:600;font-size:13px}
+label.f span.h{font-weight:400;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:15px}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px;min-width:0}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}
+legend{font-weight:600;font-size:13px;padding:0;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;font-weight:500}
+.chip input:checked+span{background:var(--pine);color:var(--pine-ink);border-color:var(--pine)}
+.chip input:focus-visible+span{outline:2px solid var(--berry);outline-offset:2px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--berry);border-color:var(--berry);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:var(--pine-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:var(--pine-ink)}}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);padding:6px 8px}
+.btn.ghost:hover{color:var(--berry)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* guests */
+.daygrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+.daygrid div{background:var(--sunk);border-radius:8px;padding:8px 6px;text-align:center}
+.daygrid b{display:block;font-family:var(--display);font-weight:400;font-size:24px;font-variant-numeric:tabular-nums}
+.daygrid span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.guest{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.guest:first-of-type{border-top:0}
+.guest .nm{font-weight:600}
+.dots{display:flex;gap:4px;align-items:center}
+.dots i{width:22px;height:22px;border-radius:5px;background:var(--sunk);font-style:normal;font-size:10px;display:grid;place-items:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.dots i.on{background:var(--pine);color:var(--pine-ink)}
+
+/* menu */
+.day{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;padding:22px 0;border-top:1px solid var(--line)}
+.day:first-child{border-top:0;padding-top:4px}
+.dayhead .dname{font-family:var(--display);font-size:26px;line-height:1}
+.dayhead .ddate{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.dayhead .hc{margin-top:10px;font-size:13px;color:var(--muted)}
+.dayhead .hc b{color:var(--ink);font-variant-numeric:tabular-nums}
+.meals{display:grid;gap:10px}
+.meal{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px}
+.meal.tbc{background:transparent;border-style:dashed}
+.mtop{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.slot{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mtitle{font-family:var(--display);font-size:21px;line-height:1.2}
+.meal.tbc .mtitle{color:var(--muted)}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.confirmed{background:var(--ok-soft);color:var(--ok)}
+.pill.poll{background:var(--berry-soft);color:var(--berry)}
+.pill.tbc{background:var(--sunk);color:var(--muted)}
+.dishes{margin:4px 0 0;padding:0;list-style:none;display:grid;gap:3px}
+.dishes li{padding-left:14px;position:relative}
+.dishes li::before{content:"";position:absolute;left:0;top:.65em;width:6px;height:1px;background:var(--gold)}
+.mfoot{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px}
+.mfoot a{font-weight:600}
+@media (max-width:560px){.day{grid-template-columns:1fr;gap:10px}}
+
+/* ideas */
+.ideacard{display:grid;gap:12px}
+.ideas{display:grid;gap:8px}
+.idea{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--sunk);border-radius:8px;padding:10px 12px}
+.idea.mine-vote{outline:2px solid var(--pine);outline-offset:-2px}
+.vote{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;min-width:52px;padding:5px 10px;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
+.idea.mine-vote .vote{background:var(--pine);color:var(--pine-ink);border-color:var(--pine)}
+.idea .t{font-weight:600}
+.idea .by{font-size:12px;color:var(--muted)}
+.bar{height:4px;border-radius:2px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--berry)}
+.addidea{display:flex;gap:8px;flex-wrap:wrap}
+.addidea input{flex:1 1 200px}
+.stack{display:grid;gap:16px}
+
+/* shopping */
+.shopbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.shopbar select{width:auto;flex:0 1 260px}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.cat{margin-top:22px}
+.cat h3{font-size:19px;display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.cat h3 small{font-family:var(--body);font-size:13px;color:var(--muted)}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 2px;border-top:1px solid var(--line)}
+.item input[type=checkbox]{width:18px;height:18px;margin-top:3px;accent-color:var(--pine)}
+.item.got .iname{text-decoration:line-through;color:var(--muted)}
+.iname{font-weight:600}
+.iname .q{font-weight:500;color:var(--muted);margin-left:6px;font-variant-numeric:tabular-nums}
+.imeta{display:flex;gap:6px 10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:3px}
+.tag{background:var(--sunk);border-radius:4px;padding:1px 7px;color:var(--ink)}
+.tag.bring{background:var(--ok-soft);color:var(--ok);font-weight:600}
+.iacts{display:flex;gap:2px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.tesco{font-size:13px;font-weight:600;white-space:nowrap;padding:6px 8px}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:20;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.editor{display:grid;gap:10px;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+.hostnote{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r);padding:14px 16px;margin-bottom:20px}
+.hostnote h3{font-size:18px;margin-bottom:8px}
+.hostnote ul{margin:0;padding-left:18px}
+
+/* festive artwork */
+.card{padding-top:64px}
+.garland{position:absolute;top:0;left:0;width:100%;height:80px;pointer-events:none}
+.garland .gs{stroke:color-mix(in srgb,var(--pine-ink) 70%,transparent);stroke-width:1.5}
+.garland .f1{fill:var(--berry)}.garland .f2{fill:var(--gold)}.garland .f3{fill:color-mix(in srgb,var(--pine-ink) 88%,transparent)}
+.stars{position:absolute;right:0;bottom:0;width:60%;height:100%;pointer-events:none;opacity:.22}
+.stars path{fill:var(--pine-ink)}
+.holly{position:absolute;right:200px;bottom:-14px;width:150px;height:118px;pointer-events:none;opacity:.95}
+.hl path,.sprig .hl path{fill:color-mix(in srgb,var(--pine-ink) 22%,var(--pine))}
+.card .hl path{fill:color-mix(in srgb,#0c2a1f 55%,var(--pine));stroke:color-mix(in srgb,var(--pine-ink) 35%,transparent);stroke-width:1}
+.hv{stroke:color-mix(in srgb,var(--pine-ink) 35%,transparent);stroke-width:1;display:none}
+.hb circle{fill:var(--berry)}
+.hs circle{fill:#fff;opacity:.55}
+.card>div{position:relative;z-index:1}
+@media (max-width:760px){.holly{right:6px}}
+@media (max-width:560px){.holly{width:110px;height:86px;right:6px;bottom:-10px}.card{padding-top:58px}}
+.sprig{width:44px;height:26px;flex:none}
+.view-head h2{display:flex;align-items:center;gap:10px}
+.dayhead .dname::after{content:"";display:block;width:28px;height:2px;margin-top:10px;background:linear-gradient(90deg,var(--berry) 0 33%,var(--gold) 33% 66%,var(--pine) 66%)}
+footer.foot{padding-block:8px 40px;color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="wrap invite">
+  <div class="card">
+    <svg class="garland" viewBox="0 0 960 80" preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
+  <path class="gs" d="M0 6 Q480 86 960 6" fill="none"/>
+  <path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(21.8 7.8) rotate(4.5)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(65.5 11.1) rotate(4.1)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(109.1 14.1) rotate(3.7)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(152.7 16.7) rotate(3.2)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(196.4 19.0) rotate(2.8)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(240.0 21.0) rotate(2.4)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(283.6 22.7) rotate(1.9)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(327.3 24.0) rotate(1.5)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(370.9 25.0) rotate(1.1)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(414.5 25.6) rotate(0.6)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(458.2 26.0) rotate(0.2)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(501.8 26.0) rotate(-0.2)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(545.5 25.6) rotate(-0.7)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(589.1 25.0) rotate(-1.1)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(632.7 24.0) rotate(-1.5)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(676.4 22.7) rotate(-2.0)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(720.0 21.0) rotate(-2.4)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(763.6 19.0) rotate(-2.8)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(807.3 16.7) rotate(-3.3)"/><path class="f2" d="M-14 0 L14 0 L0 26Z" transform="translate(850.9 14.1) rotate(-3.7)"/><path class="f3" d="M-14 0 L14 0 L0 26Z" transform="translate(894.5 11.1) rotate(-4.1)"/><path class="f1" d="M-14 0 L14 0 L0 26Z" transform="translate(938.2 7.8) rotate(-4.6)"/>
+</svg>
+    <svg class="stars" viewBox="0 0 400 200" preserveAspectRatio="xMaxYMax slice" aria-hidden="true" focusable="false"><path d="M0 -6 L1.5 -1.5 L6 0 L1.5 1.5 L0 6 L-1.5 1.5 L-6 0 L-1.5 -1.5Z" transform="translate(40 150)"/><path d="M0 -4 L1.0 -1.0 L4 0 L1.0 1.0 L0 4 L-1.0 1.0 L-4 0 L-1.0 -1.0Z" transform="translate(110 60)"/><path d="M0 -5 L1.2 -1.2 L5 0 L1.2 1.2 L0 5 L-1.2 1.2 L-5 0 L-1.2 -1.2Z" transform="translate(190 170)"/><path d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8Z" transform="translate(260 40)"/><path d="M0 -4 L1.0 -1.0 L4 0 L1.0 1.0 L0 4 L-1.0 1.0 L-4 0 L-1.0 -1.0Z" transform="translate(330 120)"/><path d="M0 -5 L1.2 -1.2 L5 0 L1.2 1.2 L0 5 L-1.2 1.2 L-5 0 L-1.2 -1.2Z" transform="translate(370 30)"/><path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8Z" transform="translate(300 180)"/><path d="M0 -3 L0.8 -0.8 L3 0 L0.8 0.8 L0 3 L-0.8 0.8 L-3 0 L-0.8 -0.8Z" transform="translate(70 30)"/></svg>
+    <svg class="holly" viewBox="-70 -70 140 110" aria-hidden="true" focusable="false">
+  <g class="hl"><path d="M0.0 -0.0 L7.5 -5.7 L15.0 -5.8 L22.5 -13.9 L30.0 -8.2 L37.5 -13.9 L45.0 -5.8 L52.5 -5.7 L60.0 -0.0 L52.5 5.7 L45.0 5.8 L37.5 13.9 L30.0 8.2 L22.5 13.9 L15.0 5.8 L7.5 5.7Z" transform="rotate(-160)"/><path d="M0.0 -0.0 L7.5 -5.7 L15.0 -5.8 L22.5 -13.9 L30.0 -8.2 L37.5 -13.9 L45.0 -5.8 L52.5 -5.7 L60.0 -0.0 L52.5 5.7 L45.0 5.8 L37.5 13.9 L30.0 8.2 L22.5 13.9 L15.0 5.8 L7.5 5.7Z" transform="rotate(-25)"/><path d="M0.0 -0.0 L7.5 -5.7 L15.0 -5.8 L22.5 -13.9 L30.0 -8.2 L37.5 -13.9 L45.0 -5.8 L52.5 -5.7 L60.0 -0.0 L52.5 5.7 L45.0 5.8 L37.5 13.9 L30.0 8.2 L22.5 13.9 L15.0 5.8 L7.5 5.7Z" transform="rotate(-95) scale(.85)"/></g>
+  <path class="hv" d="M0.0 -0.0 L7.5 -5.7 L15.0 -5.8 L22.5 -13.9 L30.0 -8.2 L37.5 -13.9 L45.0 -5.8 L52.5 -5.7 L60.0 -0.0 L52.5 5.7 L45.0 5.8 L37.5 13.9 L30.0 8.2 L22.5 13.9 L15.0 5.8 L7.5 5.7Z" transform="rotate(-160)" fill="none"/>
+  <g class="hb"><circle cx="-4" cy="4" r="8"/><circle cx="10" cy="8" r="7"/><circle cx="2" cy="-9" r="7"/></g>
+  <g class="hs"><circle cx="-6" cy="1" r="2"/><circle cx="8" cy="5" r="1.8"/><circle cx="0" cy="-12" r="1.8"/></g>
+</svg>
+    <div>
+      <p class="eyebrow">The Winfields of Thame invite you to stay for</p>
+      <h1>Christmas at Ours</h1>
+      <p class="sub">Five days, one big table. Tell us when you're coming and what you can't eat, vote on the meals we haven't decided, and add anything you'd like to the shopping list.</p>
+    </div>
+    <div class="stamp" aria-label="Thursday 24 to Monday 28 December 2026">
+      <span>Thu → Mon</span>
+      <b>24–28</b>
+      <span>December 2026</span>
+    </div>
+  </div>
+</header>
+
+<div class="tabs"><div class="wrap"><nav aria-label="Sections">
+  <a href="#rsvp" data-view="rsvp">RSVP</a>
+  <a href="#menu" data-view="menu">Menu</a>
+  <a href="#ideas" data-view="ideas">Polls &amp; requests<span class="n" id="n-ideas"></span></a>
+  <a href="#shopping" data-view="shopping">Shopping list<span class="n" id="n-items"></span></a>
+</nav></div></div>
+
+<main class="wrap">
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- RSVP -->
+  <section id="v-rsvp" data-v="rsvp">
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Let us know you're coming</h2><p>One reply per couple or household. You can come back and change it any time.</p></div></div>
+    <div class="grid2">
+      <div class="panel">
+        <div id="who-row" class="row" style="align-items:center;margin-bottom:14px" hidden>
+          <label class="f" style="flex:1 1 220px">Replied already, or on another phone?<select id="r-who"></select></label>
+          <span class="small muted" id="who-me" style="flex:1 1 160px"></span>
+        </div>
+        <form id="rsvp-form">
+          <label class="f">Your names <span class="h">e.g. Salad &amp; Shoe Shoe</span><input type="text" id="r-party" maxlength="60" required></label>
+          <div class="row">
+            <label class="f">Adults<input type="number" id="r-adults" min="0" max="10" value="2"></label>
+            <label class="f">Children<input type="number" id="r-kids" min="0" max="10" value="0"></label>
+          </div>
+          <fieldset><legend>Which days are you with us?</legend><div class="chips" id="r-days"></div></fieldset>
+          <label class="f">Rough arrival time on your first day <span class="h">optional</span><input type="text" id="r-arrive" maxlength="60" placeholder="e.g. about 3pm"></label>
+          <fieldset><legend>Dietary requirements</legend><div class="chips" id="r-diet"></div></fieldset>
+          <label class="f">Anything else on food <span class="h">allergies, strong dislikes, who it applies to</span><textarea id="r-dietnote" maxlength="400"></textarea></label>
+          <label class="f">Note for the hosts <span class="h">optional</span><textarea id="r-note" maxlength="400"></textarea></label>
+          <p class="small muted" style="margin:0">Dietary details and notes are only shown to the hosts.</p>
+          <div><button class="btn primary" type="submit" id="r-save">Save my RSVP</button></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h3>Who's staying</h3>
+        <div class="daygrid" id="headcount"></div>
+        <div id="guests"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section id="v-menu" data-v="menu" hidden>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>The menu</h2><p>What we're eating each day. Anything marked TBC is open for ideas on the Polls &amp; requests tab.</p></div></div>
+    <div id="hostdiet"></div>
+    <div id="menu"></div>
+  </section>
+
+  <!-- IDEAS -->
+  <section id="v-ideas" data-v="ideas" hidden>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Polls &amp; requests</h2><p>Suggest something for any meal we haven't decided, and vote for your favourite. One vote per person per meal.</p></div></div>
+    <div class="stack" id="ideas"></div>
+  </section>
+
+  <!-- SHOPPING -->
+  <section id="v-shopping" data-v="shopping" hidden>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Shopping list</h2><p>Add what you'd like. Tick "I'll bring it" if you're buying it yourself, otherwise it goes on the Tesco order.</p></div></div>
+    <div class="panel" style="margin-bottom:20px">
+      <form id="item-form">
+        <label class="f">What do you need? <span class="h">Write it how you'd say it, one thing per line. We'll sort the category, the meal and how much.</span>
+          <textarea id="i-text" maxlength="600" required placeholder="chocolates for Christmas Day&#10;bacon for sandwiches each morning&#10;2 bottles of fizz for Christmas Eve"></textarea></label>
+        <div class="row" style="align-items:center">
+          <label class="chip" style="flex:0 0 auto"><input type="checkbox" id="i-bring"><span>I'll bring it myself</span></label>
+          <div style="flex:0 0 auto"><button class="btn primary" type="submit" id="i-go">Sort it out</button></div>
+          <span class="small muted" id="i-status" style="flex:1 1 200px"></span>
+        </div>
+      </form>
+      <div id="preview" hidden>
+        <h3 style="font-size:18px;margin:18px 0 4px">Check and add</h3>
+        <p class="small muted" style="margin:0 0 6px">Amounts are based on how many have RSVP'd for each day. Change anything before adding.</p>
+        <div id="pv-rows"></div>
+        <div class="row" style="margin-top:12px"><div style="flex:0 0 auto"><button class="btn primary" type="button" id="pv-add">Add to list</button></div><div style="flex:0 0 auto"><button class="btn" type="button" id="pv-cancel">Cancel</button></div></div>
+      </div>
+    </div>
+    <div class="shopbar">
+      <select id="s-filter" aria-label="Filter by meal"></select>
+      <div class="stats" id="s-stats"></div>
+      <button class="btn" type="button" id="s-copy" style="margin-left:auto">Copy Tesco list</button>
+    </div>
+    <div id="shop"></div>
+  </section>
+</main>
+<footer class="wrap foot"><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg><span>Christmas at Ours · Thame · 24 to 28 December 2026</span></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== Settings: paste the Apps Script web app URL here ===== */
+const API_URL = "";
+/* ============================================================ */
+
+const DAYS=[
+  {id:"24",short:"Thu",date:"Thu 24 Dec",name:"Christmas Eve"},
+  {id:"25",short:"Fri",date:"Fri 25 Dec",name:"Christmas Day"},
+  {id:"26",short:"Sat",date:"Sat 26 Dec",name:"Boxing Day"},
+  {id:"27",short:"Sun",date:"Sun 27 Dec",name:"Sunday"},
+  {id:"28",short:"Mon",date:"Mon 28 Dec",name:"Monday"}];
+const SLOTS=["breakfast","lunch","dinner"];
+const SLOT_NAME={breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner"};
+const DIET=["Vegetarian","Vegan","Pescatarian","Gluten-free","Dairy-free","Nut allergy","Shellfish allergy","Halal"];
+const CATS=["Meat & poultry","Fish & seafood","Fruit & veg","Dairy, eggs & cheese","Bakery","Cupboard","Frozen","Snacks & sweets","Drinks","Household"];
+const S={meals:{},rsvps:{},diet:{},ideas:[],votes:{},items:[],me:null,isHost:false,loaded:false,rsvpFilled:false};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mealId=(d,s)=>`d${d}-${s}`;
+const ALL_MEALS=DAYS.flatMap(d=>SLOTS.map(s=>({id:mealId(d.id,s),day:d,slot:s})));
+const LIST_MEALS=()=>ALL_MEALS.filter(m=>!(m.day.id==="24"&&m.slot!=="dinner"));
+const mealLabel=id=>{const m=ALL_MEALS.find(x=>x.id===id);if(!m)return "General";const t=S.meals[id]?.title;return `${m.day.short} ${m.day.id} · ${SLOT_NAME[m.slot]}${t?" – "+t:""}`};
+const mealStatus=id=>S.meals[id]?.status||"tbc";
+const who=id=>S.rsvps[id]?.party||"A guest";
+
+/* ---------- codes, identity (kept on this phone only) ---------- */
+const store={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}}};
+const qs=new URLSearchParams(location.search);
+const CODE=qs.get("k")||store.get("xmas-k")||"";const HOST=qs.get("host")||store.get("xmas-host")||"";
+if(qs.get("k"))store.set("xmas-k",qs.get("k"));if(qs.get("host"))store.set("xmas-host",qs.get("host"));
+S.me=store.get("xmas-hh");
+
+/* ---------- api ---------- */
+async function apiGet(){const r=await fetch(`${API_URL}?code=${encodeURIComponent(CODE)}${HOST?"&host="+encodeURIComponent(HOST):""}`);const j=await r.json();if(j.error)throw j;return j}
+async function apiPost(body){const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({code:CODE,host:HOST,...body})});const j=await r.json();if(j.error)throw j;return j}
+let busy=0;
+async function load(){if(!API_URL||!CODE)return;try{const d=await apiGet();apply(d);if($("banner").dataset.kind==="net")banner("")}catch(e){console.error(e);
+  if(e&&e.error==="bad_code")banner("This link's code isn't right. Ask Nic for the invitation link again.","code");else if(!S.loaded)banner("Can't reach the list right now. Check your signal and refresh.","net")}}
+function apply(d){S.meals={};(d.meals||[]).forEach(m=>S.meals[m.id]=m);
+  S.rsvps={};(d.rsvps||[]).forEach(r=>S.rsvps[r.id]={party:r.household,adults:r.adults,kids:r.kids,days:r.days,arrive:r.arrive,updatedAt:r.updated});
+  S.ideas=d.ideas||[];S.items=d.items||[];S.votes={};(d.votes||[]).forEach(v=>{(S.votes[v.hh]=S.votes[v.hh]||{})[v.mealId]=v.ideaId});
+  S.isHost=!!d.isHost;S.diet={};(d.hosts||[]).forEach(h=>S.diet[h.hh]={party:h.household,needs:h.needs,detail:h.detail,note:h.note});
+  if(S.me&&!S.rsvps[S.me]&&S.loaded===false&&Object.keys(S.rsvps).length){/* keep id; maybe RSVP pending */}
+  S.loaded=true;renderAll();}
+async function write(body,ok){busy++;try{const j=await apiPost(body);await load();if(ok)toast(ok);return j}catch(e){console.error(e);toast(e&&e.error==="bad_code"?"This link's code isn't right":"That didn't save. Check your signal and try again.");throw e}finally{busy--}}
+setInterval(()=>{if(document.visibilityState==="visible"&&!busy)load()},20000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2400)}
+function banner(m,kind){const b=$("banner");b.textContent=m||"";b.dataset.kind=kind||"";b.hidden=!m}
+function guard(){if(!API_URL||!CODE){toast("Open this page from the invitation link");return false}
+  if(!S.me){toast("RSVP first, or pick your names, so we know who's who");location.hash="#rsvp";return false}return true}
+
+/* ---------- routing ---------- */
+const VIEWS=["rsvp","menu","ideas","shopping"];
+function route(){const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"rsvp";
+  document.querySelectorAll("[data-v]").forEach(s=>s.hidden=s.dataset.v!==v);
+  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});}
+window.addEventListener("hashchange",route);
+
+/* ---------- static form bits ---------- */
+$("r-days").innerHTML=DAYS.map(d=>`<label class="chip"><input type="checkbox" value="${d.id}" id="rd-${d.id}" checked><span>${d.date}</span></label>`).join("");
+$("r-diet").innerHTML=DIET.map((d,i)=>`<label class="chip"><input type="checkbox" value="${esc(d)}" id="rdi-${i}"><span>${esc(d)}</span></label>`).join("");
+
+/* ---------- RSVP ---------- */
+function renderWho(){const sel=$("r-who"),ids=Object.keys(S.rsvps);$("who-row").hidden=!ids.length;
+  sel.innerHTML=`<option value="">${S.me&&S.rsvps[S.me]?"":"Pick your names…"}</option>`+ids.map(id=>`<option value="${esc(id)}"${id===S.me?" selected":""}>${esc(S.rsvps[id].party)}</option>`).join("")+`<option value="__new">We haven't replied yet</option>`;
+  $("who-me").textContent=S.me&&S.rsvps[S.me]?`Replying as ${S.rsvps[S.me].party}.`:"";}
+$("r-who").addEventListener("change",async e=>{const v=e.target.value;if(!v)return;
+  if(v==="__new"){S.me=null;store.set("xmas-hh",null);S.rsvpFilled=false;$("rsvp-form").reset();DAYS.forEach(d=>$("rd-"+d.id).checked=true);$("r-save").textContent="Save my RSVP";renderAll();return}
+  S.me=v;store.set("xmas-hh",v);S.rsvpFilled=false;fillRsvp(true);renderAll();toast(`Hi ${S.rsvps[v].party}`);});
+async function fillRsvp(force){if((S.rsvpFilled&&!force)||!S.me)return;const r=S.rsvps[S.me];if(!r)return;S.rsvpFilled=true;
+  $("r-party").value=r.party||"";$("r-adults").value=r.adults??2;$("r-kids").value=r.kids??0;$("r-arrive").value=r.arrive||"";
+  DAYS.forEach(x=>$("rd-"+x.id).checked=(r.days||[]).includes(x.id));$("r-save").textContent="Update my RSVP";
+  try{const j=await apiPost({action:"mine",id:S.me});const m=j.mine;if(m){DIET.forEach((x,i)=>$("rdi-"+i).checked=(m.needs||[]).includes(x));$("r-dietnote").value=m.detail||"";$("r-note").value=m.note||""}}catch(_){}}
+$("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_URL||!CODE){toast("Open this page from the invitation link");return}
+  const party=$("r-party").value.trim();if(!party)return;const btn=$("r-save");btn.disabled=true;
+  const body={action:"rsvp",id:S.me||"",household:party,adults:Math.max(0,+$("r-adults").value||0),kids:Math.max(0,+$("r-kids").value||0),
+    days:DAYS.filter(d=>$("rd-"+d.id).checked).map(d=>d.id),arrive:$("r-arrive").value.trim(),
+    needs:DIET.filter((x,i)=>$("rdi-"+i).checked),detail:$("r-dietnote").value.trim(),note:$("r-note").value.trim()};
+  try{const j=await write(body,"RSVP saved");S.me=j.id;store.set("xmas-hh",j.id);S.rsvpFilled=true;btn.textContent="Update my RSVP";renderAll()}catch(_){}finally{btn.disabled=false}});
+function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=0);Object.values(S.rsvps).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
+function renderGuests(){const c=dayCounts();
+  $("headcount").innerHTML=DAYS.map(d=>`<div><b>${c[d.id]}</b><span>${d.short} ${d.id}</span></div>`).join("");
+  const list=Object.entries(S.rsvps).sort((a,b)=>String(a[1].updatedAt||"").localeCompare(String(b[1].updatedAt||"")));
+  $("guests").innerHTML=list.length?list.map(([id,r])=>{const n=(+r.adults||0)+(+r.kids||0);const note=S.isHost&&S.diet[id]?.note;
+    return `<div class="guest"><div><div class="nm">${esc(r.party)}${id===S.me?' <span class="muted small">(you)</span>':""}</div>
+      <div class="small muted">${n} ${n===1?"person":"people"}${r.kids?` incl. ${r.kids} ${r.kids==1?"child":"children"}`:""}${r.arrive?" · arriving "+esc(r.arrive):""}</div>
+      ${note?`<div class="small" style="margin-top:4px">“${esc(note)}”</div>`:""}</div>
+      <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")
+    :`<p class="muted small" style="margin:0">${S.loaded?"No replies yet. Yours will show here once you save it.":"Loading replies…"}</p>`;}
+
+/* ---------- MENU ---------- */
+let editing=null;
+function renderMenu(){const c=dayCounts();
+  $("menu").innerHTML=DAYS.map(d=>{const slots=SLOTS.filter(s=>!(d.id==="24"&&s!=="dinner"));
+    return `<div class="day"><div class="dayhead"><div class="dname">${d.name}</div><div class="ddate">${d.date}</div><div class="hc"><b>${c[d.id]}</b> staying</div></div>
+    <div class="meals">${slots.map(s=>mealCard(mealId(d.id,s),s)).join("")}</div></div>`}).join("");
+  renderHostDiet();}
+function tally(id){const t={};Object.values(S.votes).forEach(v=>{const x=v&&v[id];if(x)t[x]=(t[x]||0)+1});return t}
+function leadIdea(id){const ideas=S.ideas.filter(i=>i.mealId===id);if(!ideas.length)return null;const t=tally(id);return ideas.sort((a,b)=>(t[b.id]||0)-(t[a.id]||0))[0]}
+const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
+function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=st==="confirmed";
+  const n=S.ideas.filter(i=>i.mealId===id).length,lead=!conf&&leadIdea(id);
+  const pill=conf?`<span class="pill confirmed">Confirmed</span>`:st==="poll"?`<span class="pill poll">Poll open</span>`:`<span class="pill tbc">TBC</span>`;
+  const title=m.title||(st==="poll"?"Up for a vote":"To be decided");
+  const ed=editing===id?`<form class="editor" data-edit="${id}">
+      <label class="f">Title<input type="text" name="title" value="${esc(m.title||"")}" maxlength="80"></label>
+      <label class="f">Short description<input type="text" name="desc" value="${esc(m.desc||"")}" maxlength="200"></label>
+      <label class="f">Dishes <span class="h">one per line</span><textarea name="dishes">${esc((m.dishes||[]).join("\n"))}</textarea></label>
+      <label class="f">Status<select name="status">${["confirmed","poll","tbc"].map(o=>`<option value="${o}"${o===st?" selected":""}>${o==="tbc"?"TBC (open for ideas)":o==="poll"?"Poll open":"Confirmed"}</option>`).join("")}</select></label>
+      <div class="row"><div style="flex:0 0 auto"><button class="btn primary" type="submit">Save meal</button></div><div style="flex:0 0 auto"><button class="btn" type="button" data-cancel>Cancel</button></div></div></form>`:"";
+  return `<article class="meal ${conf?"":"tbc"}"><div class="mtop"><span class="slot">${SLOT_NAME[slot]}</span>${pill}</div>
+    <div class="mtitle">${esc(title)}</div>${m.desc?`<div class="muted">${esc(m.desc)}</div>`:""}
+    ${(m.dishes||[]).length?`<ul class="dishes">${m.dishes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    <div class="mfoot">${!conf?`<a href="#ideas">${n?`${n} idea${n>1?"s":""}${lead?`, leading: ${esc(lead.title)}`:""}`:"Suggest an idea"} →</a>`:""}
+      ${itemsFor(id)?`<a href="#shopping" data-filter="${id}">${itemsFor(id)} on the list</a>`:""}
+      ${S.isHost&&editing!==id?`<button class="btn ghost" type="button" data-editmeal="${id}">Edit</button>`:""}</div>${ed}</article>`}
+function renderHostDiet(){const el=$("hostdiet");if(!S.isHost){el.innerHTML="";return}
+  const rows=Object.entries(S.diet).filter(([,d])=>(d.needs||[]).length||d.detail);
+  el.innerHTML=`<div class="hostnote"><h3>Dietary notes <span class="small muted" style="font-family:var(--body)">host view only</span></h3>${rows.length?`<ul>${rows.map(([u,d])=>`<li><b>${esc(d.party||who(u))}</b>: ${esc([...(d.needs||[]),d.detail].filter(Boolean).join("; "))}</li>`).join("")}</ul>`:`<p class="muted small" style="margin:0">Nobody has told you about any requirements yet.</p>`}</div>`}
+$("menu").addEventListener("click",e=>{const t=e.target;
+  if(t.dataset.editmeal){editing=t.dataset.editmeal;renderMenu()}
+  else if(t.hasAttribute("data-cancel")){editing=null;renderMenu()}
+  else if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop()}});
+$("menu").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.edit;if(!id)return;const fd=new FormData(f);const m=ALL_MEALS.find(x=>x.id===id);
+  editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}});
+
+/* ---------- IDEAS ---------- */
+function renderIdeas(){const open=LIST_MEALS().filter(m=>mealStatus(m.id)!=="confirmed");
+  open.sort((a,b)=>(mealStatus(b.id)==="poll")-(mealStatus(a.id)==="poll"));
+  const mine=S.votes[S.me]||{};
+  $("n-ideas").textContent=S.ideas.length?S.ideas.length:"";
+  const EG=["Ice cream as big my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
+  $("ideas").innerHTML=open.length?open.map((m,ix)=>{const ideas=S.ideas.filter(i=>i.mealId===m.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const t=tally(m.id);
+    const total=Object.values(t).reduce((a,b)=>a+b,0),poll=mealStatus(m.id)==="poll";
+    return `<div class="panel ideacard"><div class="mtop"><div><span class="slot">${m.day.date} · ${SLOT_NAME[m.slot]}</span><h3 style="margin:4px 0 0">${esc(S.meals[m.id]?.title||(poll?m.day.name+" "+SLOT_NAME[m.slot].toLowerCase():"Open for requests"))}</h3></div>${poll?'<span class="pill poll">Poll open</span>':'<span class="pill tbc">TBC</span>'}</div>
+      ${S.meals[m.id]?.desc?`<div class="muted">${esc(S.meals[m.id].desc)}</div>`:""}
+      <div class="ideas">${ideas.length?ideas.map(i=>{const v=t[i.id]||0,me=mine[m.id]===i.id;
+        return `<div class="idea ${me?"mine-vote":""}"><button class="vote" type="button" data-vote="${m.id}|${i.id}" aria-pressed="${me}" aria-label="Vote for ${esc(i.title)}">${v}</button>
+          <div style="min-width:0"><div class="t">${esc(i.title)}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div>${total?`<div class="bar"><i style="width:${Math.round(v/total*100)}%"></i></div>`:""}</div>
+          <div class="iacts">${S.isHost?`<button class="btn ghost" type="button" data-pick="${m.id}|${i.id}">Make it the menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove idea">Remove</button>`:""}</div></div>`}).join("")
+        :`<p class="muted small" style="margin:0">No ideas yet. Be the first.</p>`}</div>
+      <form class="addidea" data-addidea="${m.id}"><input type="text" name="t" maxlength="80" placeholder="e.g. ${EG[ix%EG.length]}" aria-label="Your idea for ${m.day.date} ${SLOT_NAME[m.slot]}"><input type="text" name="n" maxlength="80" placeholder="Note (optional)" aria-label="Note" style="flex:1 1 140px"><button class="btn" type="submit">Suggest</button></form></div>`}).join("")
+    :`<div class="empty">Every meal is decided. Nothing to vote on.</div>`;}
+$("ideas").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.addidea;if(!id||!guard())return;const t=f.t.value.trim();if(!t)return;
+  const n=f.n.value.trim();f.reset();try{await write({action:"addIdea",mealId:id,title:t,note:n,by:S.me},"Idea added")}catch(_){f.t.value=t;f.n.value=n}});
+$("ideas").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
+  try{
+    if(b.dataset.vote){if(!guard())return;const[mid,iid]=b.dataset.vote.split("|");const cur=(S.votes[S.me]||{})[mid];b.disabled=true;await write({action:"vote",hh:S.me,mealId:mid,ideaId:cur===iid?"":iid})}
+    else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Idea removed")}
+    else if(b.dataset.pick){const[mid,iid]=b.dataset.pick.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
+      await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:i.title,desc:i.note||cur.desc||"",dishes:cur.dishes||[],status:"confirmed"},"Added to the menu")}
+  }catch(_){}});
+
+/* ---------- SHOPPING ---------- */
+function mealOptions(sel){const opts=[`<option value="all">All meals</option>`,`<option value="general">General / snacks &amp; drinks</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}">${esc(mealLabel(m.id))}</option>`));
+  const v=sel.value;sel.innerHTML=opts.join("");if(v&&[...sel.options].some(o=>o.value===v))sel.value=v}
+const tescoUrl=i=>"https://www.tesco.com/groceries/en-GB/search?query="+encodeURIComponent(i.name);
+function renderShop(){mealOptions($("s-filter"));
+  const f=$("s-filter").value||"all";const items=S.items.filter(i=>f==="all"||i.mealId===f);
+  $("n-items").textContent=S.items.length?S.items.length:"";
+  const tesco=items.filter(i=>!i.bringer),got=tesco.filter(i=>i.got).length;
+  $("s-stats").innerHTML=`<span><b>${items.length}</b> items</span><span><b>${tesco.length}</b> on the Tesco order</span><span><b>${items.length-tesco.length}</b> being brought</span>${tesco.length?`<span><b>${got}</b> in basket</span>`:""}`;
+  if(!items.length){$("shop").innerHTML=`<div class="empty">${!S.loaded?"Loading the list…":f==="all"?"The list is empty. Add the first item above.":"Nothing on the list for this meal yet."}</div>`;return}
+  $("shop").innerHTML=CATS.map(c=>{const rows=items.filter(i=>(CATS.includes(i.cat)?i.cat:"Cupboard")===c).sort((a,b)=>String(a.name).localeCompare(String(b.name)));if(!rows.length)return "";
+    return `<div class="cat"><h3>${esc(c)} <small>${rows.length}</small></h3>${rows.map(i=>{const mineB=String(i.bringer)===String(S.me);
+      return `<div class="item ${i.got?"got":""}">
+      <input type="checkbox" ${i.got?"checked":""} data-got="${i.id}" aria-label="In the basket: ${esc(i.name)}" title="In the basket">
+      <div style="min-width:0"><div class="iname">${esc(i.name)}${i.qty?`<span class="q">${esc(i.qty)}</span>`:""}</div>
+        <div class="imeta"><span class="tag">${esc(i.mealId==="general"?"General":mealLabel(i.mealId))}</span>${i.bringer?`<span class="tag bring">${esc(who(i.bringer))} bringing</span>`:""}${i.note?`<span>${esc(i.note)}</span>`:""}<span>added by ${esc(who(i.by))}</span></div></div>
+      <div class="iacts">${!i.bringer?`<a class="tesco" href="${tescoUrl(i)}" target="_blank" rel="noopener">Find on Tesco ↗</a>`:""}
+        ${mineB?`<button class="btn ghost" type="button" data-bring="${i.id}">Put back on order</button>`:!i.bringer?`<button class="btn ghost" type="button" data-bring="${i.id}">I'll bring it</button>`:""}
+        ${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delitem="${i.id}" aria-label="Remove ${esc(i.name)}">Remove</button>`:""}</div></div>`}).join("")}</div>`}).join("");}
+$("s-filter").addEventListener("change",renderShop);
+$("shop").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!guard())return;b.disabled=true;
+  try{if(b.dataset.bring){const i=S.items.find(x=>x.id===b.dataset.bring);await write({action:"updateItem",id:i.id,bringer:String(i.bringer)===String(S.me)?"":S.me})}
+  else if(b.dataset.delitem){await write({action:"deleteItem",id:b.dataset.delitem},"Removed")}}catch(_){b.disabled=false}});
+$("shop").addEventListener("change",async e=>{const id=e.target.dataset.got;if(!id)return;if(!guard()){e.target.checked=!e.target.checked;return}
+  try{await write({action:"updateItem",id,got:e.target.checked})}catch(_){e.target.checked=!e.target.checked}});
+$("s-copy").addEventListener("click",async()=>{const rows=S.items.filter(i=>!i.bringer);
+  const txt=CATS.map(c=>{const r=rows.filter(i=>(CATS.includes(i.cat)?i.cat:"Cupboard")===c);return r.length?c.toUpperCase()+"\n"+r.map(i=>`- ${i.name}${i.qty?" x "+i.qty:""}${i.note?" ("+i.note+")":""}`).join("\n"):""}).filter(Boolean).join("\n\n");
+  if(!txt){toast("Nothing on the Tesco order yet");return}
+  try{await navigator.clipboard.writeText(txt);toast("Tesco list copied")}catch(_){toast("Couldn't copy on this device")}});
+
+/* ---- free-text item sorting ---- */
+const FALLBACK_HEAD=12;
+const headFor=mid=>{const m=ALL_MEALS.find(x=>x.id===mid);if(!m)return null;return dayCounts()[m.day.id]||FALLBACK_HEAD};
+const CAT_WORDS=[["Frozen",["ice cream","frozen","ice cubes","ice"]],["Drinks",["wine","beer","lager","fizz","prosecco","champagne","cava","gin","vodka","whisky","rum","baileys","port","sherry","cider","juice","coke","lemonade","tonic","coffee","tea bags","water"]],
+  ["Snacks & sweets",["chocolate","crisps","sweets","nuts","biscuit","cracker","quality street","celebrations","pretzel","popcorn","cornflakes","cereal","crunchy nut"]],["Fish & seafood",["salmon","prawn","fish","cod","crab","lobster","mussel","oyster","trout","mackerel"]],
+  ["Meat & poultry",["bacon","sausage","turkey","ham","beef","chicken","pork","lamb","gammon","pigs in blankets","chipolata","duck","goose","stuffing","chorizo","salami"]],["Dairy, eggs & cheese",["milk","cream","butter","cheese","brie","stilton","cheddar","camembert","egg","yoghurt","yogurt","custard"]],
+  ["Bakery",["bread","roll","bap","baguette","croissant","muffin","crumpet","mince pie","cake","stollen","panettone","wrap","loaf"]],["Fruit & veg",["potato","carrot","parsnip","sprout","onion","garlic","apple","orange","lemon","lime","berr","grape","salad","lettuce","tomato","cabbage","herb","mushroom","veg","fruit","satsuma","clementine","cranberr","avocado","cucumber","pepper","banana"]],
+  ["Household",["foil","cling","bin bag","napkin","kitchen roll","candle","washing up","dishwasher"]]];
+function guessCat(t){t=t.toLowerCase();for(const[c,ws]of CAT_WORDS)if(ws.some(w=>t.includes(w)))return c;return "Cupboard"}
+function guessMeals(t){t=t.toLowerCase();
+  if(/christmas dinner|xmas dinner/.test(t))return["d25-dinner"];
+  const days=[];[[/christmas eve|xmas eve|\b24(th)?\b/,"24"],[/christmas day|xmas day|\b25(th)?\b/,"25"],[/boxing day|\b26(th)?\b/,"26"],[/sunday|\b27(th)?\b/,"27"],[/monday|\b28(th)?\b/,"28"]].forEach(([r,d])=>{if(r.test(t))days.push(d)});
+  const slot=/breakfast|morning|brunch/.test(t)?"breakfast":/lunch|canap|picky|nibble/.test(t)?"lunch":/dinner|supper|evening|roast/.test(t)?"dinner":null;
+  const each=/\b(each|every)\b|all week|daily/.test(t);
+  if(each)return LIST_MEALS().filter(m=>m.slot===(slot||"dinner")).map(m=>m.id);
+  if(!days.length)return["general"];
+  return days.map(d=>mealId(d,d==="24"?"dinner":(slot||"dinner")));}
+function localParse(text){return text.split(/\n|;/).map(s=>s.trim()).filter(Boolean).flatMap(line=>{
+  const qm=line.match(/^(\d+(?:\.\d+)?\s*(?:x|kg|g|ml|l|packs?|bottles?|tins?|boxes?|bags?|jars?|pints?)?)\s+(?:of\s+)?/i);
+  const qty=qm?qm[1].trim():"";const rest=qm?line.slice(qm[0].length):line;
+  const name=rest.split(/\s+(?:for|each|every|on)\s+/i)[0].trim()||rest;const cat=guessCat(line);
+  return guessMeals(line).map(mid=>({name:name.charAt(0).toUpperCase()+name.slice(1),qty:qty||(mid==="general"?"":`for ${headFor(mid)}`),cat,mealId:mid,note:""}));});}
+let PV=[];
+function mealSelect(v,idx){return `<select data-pv="${idx}" data-f="mealId" aria-label="Meal">${[`<option value="general">General</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}"${m.id===v?" selected":""}>${esc(mealLabel(m.id))}</option>`)).join("")}</select>`}
+function renderPreview(){$("preview").hidden=!PV.length;$("pv-add").textContent=`Add ${PV.length} to list`;
+  $("pv-rows").innerHTML=PV.map((p,i)=>`<div class="item" style="grid-template-columns:minmax(0,1fr) auto"><div class="row" style="min-width:0">
+    <input type="text" data-pv="${i}" data-f="name" value="${esc(p.name)}" aria-label="Item" style="flex:2 1 180px">
+    <input type="text" data-pv="${i}" data-f="qty" value="${esc(p.qty)}" aria-label="Quantity" style="flex:1 1 110px">
+    <select data-pv="${i}" data-f="cat" aria-label="Category" style="flex:1 1 150px">${CATS.map(c=>`<option${c===p.cat?" selected":""}>${esc(c)}</option>`).join("")}</select>
+    <div style="flex:1 1 180px">${mealSelect(p.mealId,i)}</div></div>
+    <button class="btn ghost" type="button" data-pvdel="${i}" aria-label="Drop ${esc(p.name)}">Drop</button></div>`).join("");}
+["input","change"].forEach(ev=>$("pv-rows").addEventListener(ev,e=>{const i=e.target.dataset.pv,f=e.target.dataset.f;if(i!=null&&f)PV[i][f]=e.target.value}));
+$("pv-rows").addEventListener("click",e=>{const i=e.target.dataset.pvdel;if(i!=null){PV.splice(+i,1);renderPreview()}});
+$("pv-cancel").addEventListener("click",()=>{PV=[];renderPreview()});
+$("pv-add").addEventListener("click",async()=>{if(!guard()||!PV.length)return;const bring=$("i-bring").checked?S.me:"";const rows=PV.filter(p=>p.name.trim());
+  $("pv-add").disabled=true;
+  try{await write({action:"addItems",by:S.me,items:rows.map(p=>({name:p.name.trim(),qty:p.qty.trim(),cat:p.cat,mealId:p.mealId,note:p.note||"",bringer:bring}))},`Added ${rows.length} to the list`);
+    PV=[];renderPreview();$("i-text").value="";$("i-bring").checked=false;}catch(_){}finally{$("pv-add").disabled=false}});
+$("item-form").addEventListener("submit",e=>{e.preventDefault();const text=$("i-text").value.trim();if(!text)return;PV=localParse(text);renderPreview();});
+
+/* ---------- boot ---------- */
+function renderAll(){renderWho();renderGuests();renderMenu();renderIdeas();renderShop();fillRsvp()}
+route();renderAll();
+if(!API_URL)banner("Not connected yet. Nic needs to finish setting up the Google Sheet.");
+else if(!CODE)banner("Open this page from the invitation link so you can join in.");
+else load();
+</script>
+</body>
+</html>
