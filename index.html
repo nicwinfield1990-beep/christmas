@@ -96,7 +96,7 @@ legend{font-weight:600;font-size:13px;padding:0;margin-bottom:6px;width:100%;whi
 .daygrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
 .daygrid div{background:var(--sunk);border-radius:8px;padding:8px 6px;text-align:center}
 .daygrid b{display:block;font-family:var(--display);font-weight:400;font-size:24px;font-variant-numeric:tabular-nums}
-.daygrid span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.daygrid span{font-size:11px;letter-spacing:.04em;white-space:nowrap;text-transform:uppercase;color:var(--muted)}
 .guest{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line)}
 .guest:first-of-type{border-top:0}
 .guest .nm{font-weight:600}
@@ -374,15 +374,16 @@ window.addEventListener("hashchange",route);
 
 /* ---------- RSVP ---------- */
 const PARTY=[
-  {id:"hosts",name:"Mummy, Daddy & Lyla",people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
+  {id:"hosts",name:"Mummy, Daddy & Lyla",always:true,people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
   {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
   {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach"},{id:"rach-2",name:"Auntie Rach"}]},
   {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon"}]},
   {id:"chris",name:"Uncle Chris",people:[{id:"chris",name:"Uncle Chris"}]}];
 const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
 if(S.me&&!HH[S.me]){S.me=null;store.set("xmas-hh",null)}
-function renderWho(){$("r-who").innerHTML=PARTY.map(h=>`<label class="chip"><input type="radio" name="who" value="${h.id}" id="rw-${h.id}"${h.id===S.me?" checked":""}><span>${esc(h.name)}</span></label>`).join("");
-  $("rsvp-body").hidden=!S.me;if(S.me&&S.loaded&&S.formFor!==S.me)buildForm();}
+function renderWho(){if(S.isHost&&!S.me){S.me="hosts";store.set("xmas-hh","hosts")}
+  $("r-who").innerHTML=PARTY.filter(h=>!h.always).map(h=>`<label class="chip"><input type="radio" name="who" value="${h.id}" id="rw-${h.id}"${h.id===S.me?" checked":""}><span>${esc(h.name)}</span></label>`).join("");
+  const rsvpable=S.me&&!HH[S.me].always;$("rsvp-body").hidden=!rsvpable;if(rsvpable&&S.loaded&&S.formFor!==S.me)buildForm();}
 $("r-who").addEventListener("change",e=>{const v=e.target.value;if(!HH[v])return;S.me=v;store.set("xmas-hh",v);S.formFor=null;renderAll();});
 function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
   $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
@@ -397,10 +398,12 @@ $("rsvp-form").addEventListener("submit",async e=>{e.preventDefault();if(!API_UR
   try{for(const[i,p]of h.people.entries()){await apiPost({action:"rsvp",id:p.id,household:p.name,adults:p.count===false?0:1,kids:0,
       days:DAYS.filter(d=>$(`n-${p.id}-${d.id}`).checked).map(d=>d.id),arrive:"",needs:[],detail:$("dt-"+p.id).value.trim(),note:i===0?$("r-note").value.trim():""})}
     await load();toast("Saved, thank you");btn.textContent="Update"}catch(err){console.error(err);toast("That didn't save. Check your signal and try again.")}finally{btn.disabled=false}});
-function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=0);Object.values(S.rsvps).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
+const ALWAYS_IDS=new Set(PARTY.filter(h=>h.always).flatMap(h=>h.people.map(p=>p.id)));
+function dayCounts(){const c={};DAYS.forEach(d=>c[d.id]=ALWAYS_IDS.size);Object.entries(S.rsvps).filter(([id])=>!ALWAYS_IDS.has(id)).map(([,r])=>r).forEach(r=>(r.days||[]).forEach(d=>{if(d in c)c[d]+=(+r.adults||0)+(+r.kids||0)}));return c}
 function renderGuests(){const c=dayCounts();
   $("headcount").innerHTML=DAYS.map(d=>`<div><b>${c[d.id]}</b><span>${d.short} ${d.id}</span></div>`).join("");
-  $("guests").innerHTML=PARTY.map(h=>{const first=S.rsvps[h.people[0].id];const note=S.isHost&&S.diet[h.people[0].id]?.note;
+  $("guests").innerHTML=PARTY.map(h=>{if(h.always)return `<div class="guest-hh"><div class="guest"><div><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div><div class="small muted">Hosts · here all week</div></div><div class="dots" aria-label="Every day">${DAYS.map(d=>`<i class="on" title="${d.date}">${d.id}</i>`).join("")}</div></div></div>`;
+    const first=S.rsvps[h.people[0].id];const note=S.isHost&&S.diet[h.people[0].id]?.note;
     return `<div class="guest-hh"><div class="nm">${esc(h.name)}${h.id===S.me?' <span class="muted small">(you)</span>':""}</div>
     ${h.people.map(p=>{const r=S.rsvps[p.id];return `<div class="guest"><div class="small">${esc(p.name)}${r?"":' <span class="muted">· not replied yet</span>'}</div>
       <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${r&&(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")}
