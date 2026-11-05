@@ -246,6 +246,7 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
       <div class="panel">
         <form id="rsvp-form">
           <fieldset><legend>Who are you?</legend><div class="chips" id="r-who"></div></fieldset>
+          <p class="small muted" id="r-always" hidden style="margin:0">You're here all week, so no RSVP needed. You can suggest, vote and add to the shopping list as Mummy, Daddy &amp; Lyla.</p>
           <div id="rsvp-body" hidden style="display:grid;gap:16px">
             <fieldset><legend>Which days is each of you here? <span class="h" style="font-weight:400;color:var(--muted)">Untick any day someone isn't with us</span></legend><div class="tablewrap" id="r-grid"></div></fieldset>
             <fieldset><legend>Dietary requirements <span class="h" style="font-weight:400;color:var(--muted)">only the hosts see these</span></legend><div id="r-dietrows" style="display:grid;gap:10px"></div></fieldset>
@@ -382,8 +383,8 @@ const PARTY=[
 const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
 if(S.me&&!HH[S.me]){S.me=null;store.set("xmas-hh",null)}
 function renderWho(){if(S.isHost&&!S.me){S.me="hosts";store.set("xmas-hh","hosts")}
-  $("r-who").innerHTML=PARTY.filter(h=>!h.always).map(h=>`<label class="chip"><input type="radio" name="who" value="${h.id}" id="rw-${h.id}"${h.id===S.me?" checked":""}><span>${esc(h.name)}</span></label>`).join("");
-  const rsvpable=S.me&&!HH[S.me].always;$("rsvp-body").hidden=!rsvpable;if(rsvpable&&S.loaded&&S.formFor!==S.me)buildForm();}
+  $("r-who").innerHTML=PARTY.map(h=>`<label class="chip"><input type="radio" name="who" value="${h.id}" id="rw-${h.id}"${h.id===S.me?" checked":""}><span>${esc(h.name)}</span></label>`).join("");
+  const rsvpable=S.me&&!HH[S.me].always;$("rsvp-body").hidden=!rsvpable;$("r-always").hidden=!(S.me&&HH[S.me].always);if(rsvpable&&S.loaded&&S.formFor!==S.me)buildForm();}
 $("r-who").addEventListener("change",e=>{const v=e.target.value;if(!HH[v])return;S.me=v;store.set("xmas-hh",v);S.formFor=null;renderAll();});
 function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
   $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
