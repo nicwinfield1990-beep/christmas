@@ -350,7 +350,8 @@ let MENU={},SHEET_MEALS={};
 function mergeMeals(){S.meals={};const ids=new Set([...Object.keys(SHEET_MEALS),...Object.keys(MENU)]);
   ids.forEach(id=>{const sm=SHEET_MEALS[id],mm=MENU[id];if(!mm){S.meals[id]=sm;return}
     const base=sm?{...sm}:{id,status:"confirmed"};const sheetHasDishes=sm&&(sm.dishes||[]).length;
-    if(!sheetHasDishes){if(mm.dishes)base.dishes=mm.dishes;if("desc" in mm)base.desc=mm.desc}
+    if(mm.dishes){const seen=new Set();base.dishes=[...mm.dishes,...(sm&&sm.dishes||[])].filter(x=>{const k=String(x).trim().toLowerCase();if(seen.has(k))return false;seen.add(k);return true})}
+    if(!sheetHasDishes&&"desc" in mm)base.desc=mm.desc;
     if(!base.title&&mm.title)base.title=mm.title;if(!sm&&mm.status)base.status=mm.status;S.meals[id]=base});}
 fetch("menu.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).then(j=>{MENU=j||{};mergeMeals();renderAll()}).catch(()=>{});
 function apply(d){SHEET_MEALS={};(d.meals||[]).forEach(m=>SHEET_MEALS[m.id]=m);mergeMeals();
@@ -430,7 +431,7 @@ function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=
   return `<article class="meal ${conf?"":"tbc"}"><div class="mtop"><span class="slot">${SLOT_NAME[slot]}</span>${pill}</div>
     <div class="mtitle">${esc(title)}</div>${m.desc?`<div class="muted">${esc(m.desc)}</div>`:""}
     ${(m.dishes||[]).length?`<ul class="dishes">${m.dishes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-    <div class="mfoot">${!conf?`<a href="#ideas">${n?`${n} idea${n>1?"s":""}${lead?`, leading: ${esc(lead.title)}`:""}`:"Suggest an idea"} →</a>`:""}
+    <div class="mfoot">${conf?`<a href="#ideas" data-goto="${id}">${n?`${n} request${n>1?"s":""}`:"Request something"} →</a>`:""}${!conf?`<a href="#ideas">${n?`${n} idea${n>1?"s":""}${lead?`, leading: ${esc(lead.title)}`:""}`:"Suggest an idea"} →</a>`:""}
       ${itemsFor(id)?`<a href="#shopping" data-filter="${id}">${itemsFor(id)} on the list</a>`:""}
       ${S.isHost&&editing!==id?`<button class="btn ghost" type="button" data-editmeal="${id}">Edit</button>`:""}</div>${ed}</article>`}
 function renderHostDiet(){const el=$("hostdiet");if(!S.isHost){el.innerHTML="";return}
@@ -439,7 +440,8 @@ function renderHostDiet(){const el=$("hostdiet");if(!S.isHost){el.innerHTML="";r
 $("menu").addEventListener("click",e=>{const t=e.target;
   if(t.dataset.editmeal){editing=t.dataset.editmeal;renderMenu()}
   else if(t.hasAttribute("data-cancel")){editing=null;renderMenu()}
-  else if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop()}});
+  else if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop()}
+  else if(t.dataset.goto){const id=t.dataset.goto;setTimeout(()=>{const c=$("card-"+id);if(c)c.scrollIntoView({block:"start"})},60)}});
 $("menu").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.edit;if(!id)return;const fd=new FormData(f);const m=ALL_MEALS.find(x=>x.id===id);
   editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}});
 
@@ -459,13 +461,26 @@ function renderIdeas(){const open=LIST_MEALS().filter(m=>mealStatus(m.id)!=="con
           <div class="iacts">${S.isHost?`<button class="btn ghost" type="button" data-pick="${m.id}|${i.id}">Make it the menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove idea">Remove</button>`:""}</div></div>`}).join("")
         :`<p class="muted small" style="margin:0">No ideas yet. Be the first.</p>`}</div>
       <form class="addidea" data-addidea="${m.id}"><input type="text" name="t" maxlength="80" placeholder="e.g. ${EG[ix%EG.length]}" aria-label="Your idea for ${m.day.date} ${SLOT_NAME[m.slot]}"><input type="text" name="n" maxlength="80" placeholder="Note (optional)" aria-label="Note" style="flex:1 1 140px"><button class="btn" type="submit">Suggest</button></form></div>`}).join("")
-    :`<div class="empty">Every meal is decided. Nothing to vote on.</div>`;}
+    :`<div class="empty">No meals up for a vote right now.</div>`;
+  renderRequests();}
+function renderRequests(){const conf=LIST_MEALS().filter(m=>mealStatus(m.id)==="confirmed");if(!conf.length)return;
+  const EG2=["e.g. Brussels sprouts with bacon","e.g. Extra pigs in blankets","e.g. Bread sauce","e.g. Brown sauce for the sarnies"];
+  $("ideas").insertAdjacentHTML("beforeend",`<div class="view-head" style="margin:18px 0 0"><div><h3 style="font-size:24px">Requests for planned meals</h3><p>Something missing from a meal that's already sorted? Ask for it here.</p></div></div>`+conf.map((m,ix)=>{
+    const meal=S.meals[m.id]||{},reqs=S.ideas.filter(i=>i.mealId===m.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+    return `<div class="panel ideacard" id="card-${m.id}"><div class="mtop"><div><span class="slot">${m.day.date} · ${SLOT_NAME[m.slot]}</span><h3 style="margin:4px 0 0">${esc(meal.title||SLOT_NAME[m.slot])}</h3></div><span class="pill confirmed">Confirmed</span></div>
+      ${(meal.dishes||[]).length?`<div class="small muted">${esc(meal.dishes.join(" · "))}</div>`:""}
+      <div class="ideas">${reqs.length?reqs.map(i=>{const on=(meal.dishes||[]).some(d=>String(d).toLowerCase()===String(i.title).toLowerCase());
+        return `<div class="idea" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="t">${esc(i.title)}${on?' <span class="pill confirmed" style="margin-left:6px">On the menu</span>':""}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div></div>
+          <div class="iacts">${S.isHost&&!on?`<button class="btn ghost" type="button" data-addtomenu="${m.id}|${i.id}">Add to menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove request">Remove</button>`:""}</div></div>`}).join(""):`<p class="muted small" style="margin:0">No requests yet.</p>`}</div>
+      <form class="addidea" data-addidea="${m.id}"><input type="text" name="t" maxlength="80" placeholder="${EG2[ix%EG2.length]}" aria-label="Request for ${m.day.date} ${SLOT_NAME[m.slot]}"><input type="text" name="n" maxlength="80" placeholder="Note (optional)" aria-label="Note" style="flex:1 1 140px"><button class="btn" type="submit">Request</button></form></div>`}).join(""));}
 $("ideas").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.addidea;if(!id||!guard())return;const t=f.t.value.trim();if(!t)return;
   const n=f.n.value.trim();f.reset();try{await write({action:"addIdea",mealId:id,title:t,note:n,by:S.me},"Idea added")}catch(_){f.t.value=t;f.n.value=n}});
 $("ideas").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
   try{
     if(b.dataset.vote){if(!guard())return;const[mid,iid]=b.dataset.vote.split("|");const cur=(S.votes[S.me]||{})[mid];b.disabled=true;await write({action:"vote",hh:S.me,mealId:mid,ideaId:cur===iid?"":iid})}
-    else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Idea removed")}
+    else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Removed")}
+    else if(b.dataset.addtomenu){const[mid,iid]=b.dataset.addtomenu.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
+      await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:cur.title||"",desc:cur.desc||"",dishes:[...(cur.dishes||[]),i.title],status:"confirmed"},"Added to the menu")}
     else if(b.dataset.pick){const[mid,iid]=b.dataset.pick.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
       await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:i.title,desc:i.note||cur.desc||"",dishes:cur.dishes||[],status:"confirmed"},"Added to the menu")}
   }catch(_){}});
