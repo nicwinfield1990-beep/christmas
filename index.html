@@ -233,7 +233,6 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
 <div class="tabs"><div class="wrap"><nav aria-label="Sections">
   <a href="#rsvp" data-view="rsvp">RSVP</a>
   <a href="#menu" data-view="menu">Menu</a>
-  <a href="#ideas" data-view="ideas">Polls &amp; requests<span class="n" id="n-ideas"></span></a>
   <a href="#shopping" data-view="shopping">Shopping list<span class="n" id="n-items"></span></a>
 </nav></div></div>
 
@@ -265,15 +264,9 @@ table.nights{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nu
 
   <!-- MENU -->
   <section id="v-menu" data-v="menu" hidden>
-    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>The menu</h2><p>What we're eating each day. Anything marked TBC is open for ideas on the Polls &amp; requests tab.</p></div></div>
+    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>The menu</h2><p>What we're eating each day. Suggest and vote on anything still to be decided, or ask for something to be added to a meal that's sorted.</p></div></div>
     <div id="hostdiet"></div>
     <div id="menu"></div>
-  </section>
-
-  <!-- IDEAS -->
-  <section id="v-ideas" data-v="ideas" hidden>
-    <div class="view-head"><div><h2><svg class="sprig" viewBox="-70 -40 140 80" aria-hidden="true" focusable="false"><g class="hl"><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-170)"/><path d="M0.0 -0.0 L7.7 -6.0 L15.3 -5.7 L23.0 -12.0 L30.7 -5.7 L38.3 -6.0 L46.0 -0.0 L38.3 6.0 L30.7 5.7 L23.0 12.0 L15.3 5.7 L7.7 6.0Z" transform="rotate(-10)"/></g><g class="hb"><circle cx="-5" cy="2" r="6"/><circle cx="6" cy="3" r="6"/></g></svg>Polls &amp; requests</h2><p>Suggest something for any meal we haven't decided, and vote for your favourite. One vote per person per meal.</p></div></div>
-    <div class="stack" id="ideas"></div>
   </section>
 
   <!-- SHOPPING -->
@@ -371,8 +364,8 @@ function guard(){if(!API_URL||!CODE){toast("Open this page from the invitation l
   if(!S.me){toast("Pick who you are on the RSVP tab first");location.hash="#rsvp";return false}return true}
 
 /* ---------- routing ---------- */
-const VIEWS=["rsvp","menu","ideas","shopping"];
-function route(){const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"rsvp";
+const VIEWS=["rsvp","menu","shopping"];
+function route(){let h=location.hash.slice(1);if(h==="ideas")h="menu";const v=VIEWS.includes(h)?h:"rsvp";
   document.querySelectorAll("[data-v]").forEach(s=>s.hidden=s.dataset.v!==v);
   document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});}
 window.addEventListener("hashchange",route);
@@ -413,82 +406,71 @@ function renderGuests(){const c=dayCounts();
       <div class="dots" aria-label="Days">${DAYS.map(d=>`<i class="${r&&(r.days||[]).includes(d.id)?"on":""}" title="${d.date}">${d.id}</i>`).join("")}</div></div>`}).join("")}
     ${note?`<div class="small" style="margin-top:4px">“${esc(note)}”</div>`:""}</div>`}).join("");}
 
-/* ---------- MENU ---------- */
+/* ---------- MENU (with polls and requests) ---------- */
 let editing=null;
-function renderMenu(){const c=dayCounts();
+const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
+function tally(id){const t={};Object.values(S.votes).forEach(v=>{const x=v&&v[id];if(x)t[x]=(t[x]||0)+1});return t}
+const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
+let egIx=0;
+function renderMenu(){
+  // keep anything half-typed in the suggestion boxes across live refreshes
+  const keep={};let focusId=null;
+  document.querySelectorAll("#menu form.addidea input").forEach(i=>{if(i.value)keep[i.id]=i.value;if(document.activeElement===i)focusId=i.id});
+  const c=dayCounts();egIx=0;
   $("menu").innerHTML=DAYS.map(d=>{const slots=SLOTS.filter(s=>!(d.id==="24"&&!EVE_SLOTS.includes(s)));
     return `<div class="day"><div class="dayhead"><div class="dname">${d.name}</div><div class="ddate">${d.date}</div><div class="hc"><b>${c[d.id]}</b> staying</div></div>
     <div class="meals">${slots.map(s=>mealCard(mealId(d.id,s),s)).join("")}</div></div>`}).join("");
+  Object.entries(keep).forEach(([id,v])=>{const el=$(id);if(el)el.value=v});
+  if(focusId&&$(focusId)){const el=$(focusId);el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(_){}}
   renderHostDiet();}
-function tally(id){const t={};Object.values(S.votes).forEach(v=>{const x=v&&v[id];if(x)t[x]=(t[x]||0)+1});return t}
-function leadIdea(id){const ideas=S.ideas.filter(i=>i.mealId===id);if(!ideas.length)return null;const t=tally(id);return ideas.sort((a,b)=>(t[b.id]||0)-(t[a.id]||0))[0]}
-const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
 function mealCard(id,slot){const m=S.meals[id]||{},st=mealStatus(id);const conf=st==="confirmed";
-  const n=S.ideas.filter(i=>i.mealId===id).length,lead=!conf&&leadIdea(id);
+  const ideas=S.ideas.filter(i=>i.mealId===id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+  const t=tally(id),total=Object.values(t).reduce((a,b)=>a+b,0),mine=(S.votes[S.me]||{})[id];
   const pill=conf?`<span class="pill confirmed">Confirmed</span>`:st==="poll"?`<span class="pill poll">Poll open</span>`:`<span class="pill tbc">TBC</span>`;
   const title=m.title||(st==="poll"?"Up for a vote":"To be decided");
+  const list=ideas.map(i=>{
+    if(conf){const on=(m.dishes||[]).some(d=>String(d).toLowerCase()===String(i.title).toLowerCase());
+      return `<div class="idea" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="t">${esc(i.title)}${on?' <span class="pill confirmed" style="margin-left:6px">On the menu</span>':""}</div><div class="by">Requested by ${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div></div>
+        <div class="iacts">${S.isHost&&!on?`<button class="btn ghost" type="button" data-addtomenu="${id}|${i.id}">Add to menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove request">Remove</button>`:""}</div></div>`}
+    const v=t[i.id]||0,me=mine===i.id;
+    return `<div class="idea ${me?"mine-vote":""}"><button class="vote" type="button" data-vote="${id}|${i.id}" aria-pressed="${me}" aria-label="Vote for ${esc(i.title)}">${v}</button>
+      <div style="min-width:0"><div class="t">${esc(i.title)}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div>${total?`<div class="bar"><i style="width:${Math.round(v/total*100)}%"></i></div>`:""}</div>
+      <div class="iacts">${S.isHost?`<button class="btn ghost" type="button" data-pick="${id}|${i.id}">Make it the menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove idea">Remove</button>`:""}</div></div>`}).join("");
+  const eg=EG[egIx++%EG.length];
   const ed=editing===id?`<form class="editor" data-edit="${id}">
       <label class="f">Title<input type="text" name="title" value="${esc(m.title||"")}" maxlength="80"></label>
       <label class="f">Short description<input type="text" name="desc" value="${esc(m.desc||"")}" maxlength="200"></label>
       <label class="f">Dishes <span class="h">one per line</span><textarea name="dishes">${esc((m.dishes||[]).join("\n"))}</textarea></label>
       <label class="f">Status<select name="status">${["confirmed","poll","tbc"].map(o=>`<option value="${o}"${o===st?" selected":""}>${o==="tbc"?"TBC (open for ideas)":o==="poll"?"Poll open":"Confirmed"}</option>`).join("")}</select></label>
       <div class="row"><div style="flex:0 0 auto"><button class="btn primary" type="submit">Save meal</button></div><div style="flex:0 0 auto"><button class="btn" type="button" data-cancel>Cancel</button></div></div></form>`:"";
-  return `<article class="meal ${conf?"":"tbc"}"><div class="mtop"><span class="slot">${SLOT_NAME[slot]}</span>${pill}</div>
+  return `<article class="meal ${conf?"":"tbc"}" id="card-${id}"><div class="mtop"><span class="slot">${SLOT_NAME[slot]}</span>${pill}</div>
     <div class="mtitle">${esc(title)}</div>${m.desc?`<div class="muted">${esc(m.desc)}</div>`:""}
     ${(m.dishes||[]).length?`<ul class="dishes">${m.dishes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
-    <div class="mfoot">${conf?`<a href="#ideas" data-goto="${id}">${n?`${n} request${n>1?"s":""}`:"Request something"} →</a>`:""}${!conf?`<a href="#ideas">${n?`${n} idea${n>1?"s":""}${lead?`, leading: ${esc(lead.title)}`:""}`:"Suggest an idea"} →</a>`:""}
-      ${itemsFor(id)?`<a href="#shopping" data-filter="${id}">${itemsFor(id)} on the list</a>`:""}
+    ${list?`<div class="ideas" style="margin-top:6px">${conf?'<div class="slot" style="margin-bottom:-2px">Requests</div>':`<div class="slot" style="margin-bottom:-2px">${st==="poll"?"Vote for your favourite":"Ideas so far · tap to vote"}</div>`}${list}</div>`:""}
+    <form class="addidea" data-addidea="${id}"><input type="text" id="ai-${id}" name="t" maxlength="80" placeholder="e.g. ${esc(eg)}" aria-label="${conf?"Request something for":"Suggest something for"} ${SLOT_NAME[slot]}"><button class="btn" type="submit">${conf?"Request":"Suggest"}</button></form>
+    <div class="mfoot">${itemsFor(id)?`<a href="#shopping" data-filter="${id}">${itemsFor(id)} on the shopping list</a>`:""}
       ${S.isHost&&editing!==id?`<button class="btn ghost" type="button" data-editmeal="${id}">Edit</button>`:""}</div>${ed}</article>`}
 function renderHostDiet(){const el=$("hostdiet");if(!S.isHost){el.innerHTML="";return}
   const rows=Object.entries(S.diet).filter(([,d])=>(d.needs||[]).length||d.detail);
   el.innerHTML=`<div class="hostnote"><h3>Dietary notes <span class="small muted" style="font-family:var(--body)">host view only</span></h3>${rows.length?`<ul>${rows.map(([u,d])=>`<li><b>${esc(d.party||who(u))}</b>: ${esc([...(d.needs||[]),d.detail].filter(Boolean).join("; "))}</li>`).join("")}</ul>`:`<p class="muted small" style="margin:0">Nobody has told you about any requirements yet.</p>`}</div>`}
-$("menu").addEventListener("click",e=>{const t=e.target;
-  if(t.dataset.editmeal){editing=t.dataset.editmeal;renderMenu()}
-  else if(t.hasAttribute("data-cancel")){editing=null;renderMenu()}
-  else if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop()}
-  else if(t.dataset.goto){const id=t.dataset.goto;setTimeout(()=>{const c=$("card-"+id);if(c)c.scrollIntoView({block:"start"})},60)}});
-$("menu").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.edit;if(!id)return;const fd=new FormData(f);const m=ALL_MEALS.find(x=>x.id===id);
-  editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}});
-
-/* ---------- IDEAS ---------- */
-function renderIdeas(){const open=LIST_MEALS().filter(m=>mealStatus(m.id)!=="confirmed");
-  open.sort((a,b)=>(mealStatus(b.id)==="poll")-(mealStatus(a.id)==="poll"));
-  const mine=S.votes[S.me]||{};
-  $("n-ideas").textContent=S.ideas.length?S.ideas.length:"";
-  const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
-  $("ideas").innerHTML=open.length?open.map((m,ix)=>{const ideas=S.ideas.filter(i=>i.mealId===m.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const t=tally(m.id);
-    const total=Object.values(t).reduce((a,b)=>a+b,0),poll=mealStatus(m.id)==="poll";
-    return `<div class="panel ideacard"><div class="mtop"><div><span class="slot">${m.day.date} · ${SLOT_NAME[m.slot]}</span><h3 style="margin:4px 0 0">${esc(S.meals[m.id]?.title||(poll?m.day.name+" "+SLOT_NAME[m.slot].toLowerCase():"Open for requests"))}</h3></div>${poll?'<span class="pill poll">Poll open</span>':'<span class="pill tbc">TBC</span>'}</div>
-      ${S.meals[m.id]?.desc?`<div class="muted">${esc(S.meals[m.id].desc)}</div>`:""}
-      <div class="ideas">${ideas.length?ideas.map(i=>{const v=t[i.id]||0,me=mine[m.id]===i.id;
-        return `<div class="idea ${me?"mine-vote":""}"><button class="vote" type="button" data-vote="${m.id}|${i.id}" aria-pressed="${me}" aria-label="Vote for ${esc(i.title)}">${v}</button>
-          <div style="min-width:0"><div class="t">${esc(i.title)}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div>${total?`<div class="bar"><i style="width:${Math.round(v/total*100)}%"></i></div>`:""}</div>
-          <div class="iacts">${S.isHost?`<button class="btn ghost" type="button" data-pick="${m.id}|${i.id}">Make it the menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove idea">Remove</button>`:""}</div></div>`}).join("")
-        :`<p class="muted small" style="margin:0">No ideas yet. Be the first.</p>`}</div>
-      <form class="addidea" data-addidea="${m.id}"><input type="text" name="t" maxlength="80" placeholder="e.g. ${EG[ix%EG.length]}" aria-label="Your idea for ${m.day.date} ${SLOT_NAME[m.slot]}"><input type="text" name="n" maxlength="80" placeholder="Note (optional)" aria-label="Note" style="flex:1 1 140px"><button class="btn" type="submit">Suggest</button></form></div>`}).join("")
-    :`<div class="empty">No meals up for a vote right now.</div>`;
-  renderRequests();}
-function renderRequests(){const conf=LIST_MEALS().filter(m=>mealStatus(m.id)==="confirmed");if(!conf.length)return;
-  const EG2=["e.g. Brussels sprouts with bacon","e.g. Extra pigs in blankets","e.g. Bread sauce","e.g. Brown sauce for the sarnies"];
-  $("ideas").insertAdjacentHTML("beforeend",`<div class="view-head" style="margin:18px 0 0"><div><h3 style="font-size:24px">Requests for planned meals</h3><p>Something missing from a meal that's already sorted? Ask for it here.</p></div></div>`+conf.map((m,ix)=>{
-    const meal=S.meals[m.id]||{},reqs=S.ideas.filter(i=>i.mealId===m.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
-    return `<div class="panel ideacard" id="card-${m.id}"><div class="mtop"><div><span class="slot">${m.day.date} · ${SLOT_NAME[m.slot]}</span><h3 style="margin:4px 0 0">${esc(meal.title||SLOT_NAME[m.slot])}</h3></div><span class="pill confirmed">Confirmed</span></div>
-      ${(meal.dishes||[]).length?`<div class="small muted">${esc(meal.dishes.join(" · "))}</div>`:""}
-      <div class="ideas">${reqs.length?reqs.map(i=>{const on=(meal.dishes||[]).some(d=>String(d).toLowerCase()===String(i.title).toLowerCase());
-        return `<div class="idea" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="t">${esc(i.title)}${on?' <span class="pill confirmed" style="margin-left:6px">On the menu</span>':""}</div><div class="by">${esc(who(i.by))}${i.note?" · "+esc(i.note):""}</div></div>
-          <div class="iacts">${S.isHost&&!on?`<button class="btn ghost" type="button" data-addtomenu="${m.id}|${i.id}">Add to menu</button>`:""}${(String(i.by)===String(S.me)||S.isHost)?`<button class="btn ghost" type="button" data-delidea="${i.id}" aria-label="Remove request">Remove</button>`:""}</div></div>`}).join(""):`<p class="muted small" style="margin:0">No requests yet.</p>`}</div>
-      <form class="addidea" data-addidea="${m.id}"><input type="text" name="t" maxlength="80" placeholder="${EG2[ix%EG2.length]}" aria-label="Request for ${m.day.date} ${SLOT_NAME[m.slot]}"><input type="text" name="n" maxlength="80" placeholder="Note (optional)" aria-label="Note" style="flex:1 1 140px"><button class="btn" type="submit">Request</button></form></div>`}).join(""));}
-$("ideas").addEventListener("submit",async e=>{e.preventDefault();const f=e.target,id=f.dataset.addidea;if(!id||!guard())return;const t=f.t.value.trim();if(!t)return;
-  const n=f.n.value.trim();f.reset();try{await write({action:"addIdea",mealId:id,title:t,note:n,by:S.me},"Idea added")}catch(_){f.t.value=t;f.n.value=n}});
-$("ideas").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
+$("menu").addEventListener("click",async e=>{const t=e.target;
+  if(t.dataset.editmeal){editing=t.dataset.editmeal;renderMenu();return}
+  if(t.hasAttribute("data-cancel")){editing=null;renderMenu();return}
+  if(t.dataset.filter){$("s-filter").value=t.dataset.filter;renderShop();return}
+  const b=t.closest("button");if(!b)return;
   try{
     if(b.dataset.vote){if(!guard())return;const[mid,iid]=b.dataset.vote.split("|");const cur=(S.votes[S.me]||{})[mid];b.disabled=true;await write({action:"vote",hh:S.me,mealId:mid,ideaId:cur===iid?"":iid})}
     else if(b.dataset.delidea){await write({action:"deleteIdea",id:b.dataset.delidea},"Removed")}
-    else if(b.dataset.addtomenu){const[mid,iid]=b.dataset.addtomenu.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
-      await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:cur.title||"",desc:cur.desc||"",dishes:[...(cur.dishes||[]),i.title],status:"confirmed"},"Added to the menu")}
     else if(b.dataset.pick){const[mid,iid]=b.dataset.pick.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
       await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:i.title,desc:i.note||cur.desc||"",dishes:cur.dishes||[],status:"confirmed"},"Added to the menu")}
-  }catch(_){}});
+    else if(b.dataset.addtomenu){const[mid,iid]=b.dataset.addtomenu.split("|");const i=S.ideas.find(x=>x.id===iid),m=ALL_MEALS.find(x=>x.id===mid),cur=S.meals[mid]||{};
+      await write({action:"saveMeal",id:mid,day:m.day.id,slot:m.slot,title:cur.title||"",desc:cur.desc||"",dishes:[...(cur.dishes||[]),i.title],status:"confirmed"},"Added to the menu")}
+  }catch(_){b.disabled=false}});
+$("menu").addEventListener("submit",async e=>{e.preventDefault();const f=e.target;
+  if(f.dataset.addidea){const id=f.dataset.addidea;if(!guard())return;const inp=f.querySelector("input");const t=inp.value.trim();if(!t)return;inp.value="";
+    const conf=mealStatus(id)==="confirmed";try{await write({action:"addIdea",mealId:id,title:t,note:"",by:S.me},conf?"Request added":"Idea added")}catch(_){inp.value=t}return}
+  const id=f.dataset.edit;if(!id)return;const fd=new FormData(f);const m=ALL_MEALS.find(x=>x.id===id);
+  editing=null;try{await write({action:"saveMeal",id,day:m.day.id,slot:m.slot,title:fd.get("title").trim(),desc:fd.get("desc").trim(),dishes:fd.get("dishes").split("\n").map(s=>s.trim()).filter(Boolean),status:fd.get("status")},"Meal saved")}catch(_){}});
 
 /* ---------- SHOPPING ---------- */
 function mealOptions(sel){const opts=[`<option value="all">All meals</option>`,`<option value="general">General / snacks &amp; drinks</option>`].concat(LIST_MEALS().map(m=>`<option value="${m.id}">${esc(mealLabel(m.id))}</option>`));
@@ -571,7 +553,7 @@ $("pv-add").addEventListener("click",async()=>{if(!guard()||!PV.length)return;co
 $("item-form").addEventListener("submit",e=>{e.preventDefault();const text=$("i-text").value.trim();if(!text)return;PV=localParse(text);renderPreview();});
 
 /* ---------- boot ---------- */
-function renderAll(){renderWho();renderGuests();renderMenu();renderIdeas();renderShop();renderSuggest();fillRsvp()}
+function renderAll(){renderWho();renderGuests();renderMenu();renderShop();renderSuggest();fillRsvp()}
 route();renderAll();
 if(!API_URL)banner("Not connected yet. Nic needs to finish setting up the Google Sheet.");
 else if(!CODE)banner("Open this page from the invitation link so you can join in.");
