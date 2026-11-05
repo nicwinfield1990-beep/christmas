@@ -450,7 +450,7 @@ function renderIdeas(){const open=LIST_MEALS().filter(m=>mealStatus(m.id)!=="con
   open.sort((a,b)=>(mealStatus(b.id)==="poll")-(mealStatus(a.id)==="poll"));
   const mine=S.votes[S.me]||{};
   $("n-ideas").textContent=S.ideas.length?S.ideas.length:"";
-  const EG=["Ice cream as big my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
+  const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
   $("ideas").innerHTML=open.length?open.map((m,ix)=>{const ideas=S.ideas.filter(i=>i.mealId===m.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const t=tally(m.id);
     const total=Object.values(t).reduce((a,b)=>a+b,0),poll=mealStatus(m.id)==="poll";
     return `<div class="panel ideacard"><div class="mtop"><div><span class="slot">${m.day.date} · ${SLOT_NAME[m.slot]}</span><h3 style="margin:4px 0 0">${esc(S.meals[m.id]?.title||(poll?m.day.name+" "+SLOT_NAME[m.slot].toLowerCase():"Open for requests"))}</h3></div>${poll?'<span class="pill poll">Poll open</span>':'<span class="pill tbc">TBC</span>'}</div>
