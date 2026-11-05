@@ -376,7 +376,7 @@ window.addEventListener("hashchange",route);
 const PARTY=[
   {id:"hosts",name:"Mummy, Daddy & Lyla",always:true,people:[{id:"steph",name:"Mummy"},{id:"nic",name:"Daddy"},{id:"lyla",name:"Lyla"}]},
   {id:"grandma",name:"Grandma",people:[{id:"grandma",name:"Grandma"}]},
-  {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach",diet:"e.g. vegan"},{id:"rach-2",name:"Auntie Rach",diet:"e.g. vegan"}]},
+  {id:"rachs",name:"Auntie Rach, Auntie Rach, Mr Neems & Bump",people:[{id:"rach-1",name:"Auntie Rach",diet:"e.g. vegan, or pregnant so no soft cheese or pâté"},{id:"rach-2",name:"Auntie Rach",diet:"e.g. vegan, or pregnant so no soft cheese or pâté"}]},
   {id:"issy-simon",name:"Auntie Issy & Uncle Simon",people:[{id:"issy",name:"Auntie Issy"},{id:"simon",name:"Uncle Simon",diet:"Your list, e.g. no onions, no garlic"}]},
   {id:"chris",name:"Uncle Chris",people:[{id:"chris",name:"Uncle Chris"}]}];
 const HH=Object.fromEntries(PARTY.map(h=>[h.id,h]));
@@ -388,8 +388,8 @@ $("r-who").addEventListener("change",e=>{const v=e.target.value;if(!HH[v])return
 function buildForm(){const h=HH[S.me];if(!h)return;S.formFor=S.me;
   $("r-grid").innerHTML=`<table class="nights"><thead><tr><th scope="col"></th>${DAYS.map(d=>`<th scope="col">${d.short}<span>${d.id}</span></th>`).join("")}</tr></thead><tbody>${h.people.map(p=>{const r=S.rsvps[p.id];const days=r?(r.days||[]):DAYS.map(d=>d.id);
     return `<tr><th scope="row">${esc(p.name)}</th>${DAYS.map(d=>`<td><input type="checkbox" id="n-${p.id}-${d.id}" aria-label="${esc(p.name)} on ${d.date}"${days.includes(d.id)?" checked":""}></td>`).join("")}</tr>`}).join("")}</tbody></table>`;
-  const dp=h.people.filter(p=>p.diet);$("r-dietset").hidden=!dp.length;
-  $("r-dietrows").innerHTML=dp.map(p=>p.id==="simon"?`<label class="f">${esc(p.name)}<textarea id="dt-${p.id}" maxlength="400" placeholder="${esc(p.diet)}"></textarea></label>`:`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="${esc(p.diet)}"></label>`).join("");
+  const dp=h.people;$("r-dietset").hidden=!dp.length;
+  $("r-dietrows").innerHTML=dp.map(p=>p.id==="simon"?`<label class="f">${esc(p.name)}<textarea id="dt-${p.id}" maxlength="400" placeholder="${esc(p.diet)}"></textarea></label>`:`<label class="f">${esc(p.name)}<input type="text" id="dt-${p.id}" maxlength="200" placeholder="${esc(p.diet||"Optional, anything we should know")}"></label>`).join("");
   $("r-note").value="";
   $("r-save").textContent=h.people.some(p=>S.rsvps[p.id])?"Update":"Save";
   h.people.forEach(async(p,i)=>{try{const j=await apiPost({action:"mine",id:p.id});const m=j.mine;if(m&&S.formFor===h.id){if($("dt-"+p.id))$("dt-"+p.id).value=[...(m.needs||[]),m.detail].filter(Boolean).join(", ");if(i===0)$("r-note").value=m.note||""}}catch(_){}});}
@@ -412,7 +412,7 @@ function renderGuests(){const c=dayCounts();
 
 /* ---------- MENU (with polls and requests) ---------- */
 let editing=null;
-const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons"];
+const EG=["Ice cream as big as my uh-uh-uh","Bottle of fizz nice","I really want a chocolate biscuit","Make it a non issue","Crunchy Nut Cornflakes with Baileys","PlayStation lessons","20 Marlboro Lights and 11 pints of Stella"];
 function tally(id){const t={};Object.values(S.votes).forEach(v=>{const set=v&&v[id];if(set)set.forEach(x=>t[x]=(t[x]||0)+1)});return t}
 const myVotes=mid=>(S.votes[S.me]||{})[mid]||new Set();
 const itemsFor=id=>S.items.filter(i=>i.mealId===id).length;
